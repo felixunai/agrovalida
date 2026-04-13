@@ -1,1 +1,1 @@
-web: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn agrovalida.wsgi --log-file -
+web: python manage.py migrate --noinput && python manage.py createadmin && python manage.py collectstatic --noinput && gunicorn agrovalida.wsgi --log-file -
