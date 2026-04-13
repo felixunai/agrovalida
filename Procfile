@@ -1,1 +1,1 @@
-web: gunicorn agrovalida.wsgi
+web: sh start.sh
