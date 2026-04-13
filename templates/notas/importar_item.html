@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Importar Item para Lote - AgroValida{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Importar Item como Lote</h2>
+
+<div class="card mb-4">
+    <div class="card-header"><h5 class="mb-0">Dados do Item na Nota</h5></div>
+    <div class="card-body">
+        <table class="table table-borderless mb-0">
+            <tr><th width="200">Descrição</th><td>{{ item.descricao }}</td></tr>
+            <tr><th>Código Produto</th><td>{{ item.codigo_produto|default:"-" }}</td></tr>
+            <tr><th>NCM</th><td>{{ item.ncm|default:"-" }}</td></tr>
+            <tr><th>Quantidade</th><td>{{ item.quantidade }} {{ item.unidade|default:"" }}</td></tr>
+            <tr><th>Valor Unitário</th><td>{{ item.valor_unitario|default:"-" }}</td></tr>
+            <tr><th>Valor Total</th><td>{{ item.valor_total|default:"-" }}</td></tr>
+            <tr><th>Nota Fiscal</th><td>{{ item.nota.numero|default:"-" }} - {{ item.nota.fornecedor|default:"-" }}</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h5 class="mb-0">Preencher Dados do Lote</h5></div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Defensivo *</label>
+                <select name="defensivo" class="form-select" required>
+                    <option value="">Selecione um defensivo...</option>
+                    {% for d in defensivos %}
+                    <option value="{{ d.pk }}">{{ d.nome_comercial }}{% if d.principio_ativo %} - {{ d.principio_ativo }}{% endif %}</option>
+                    {% endfor %}
+                    </select>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Nº do Lote</label>
+                    <input type="text" name="numero_lote" class="form-control" value="{{ item.descricao|truncatechars:50 }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Data de Fabricação</label>
+                    <input type="date" name="data_fabricacao" class="form-control">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Data de Validade *</label>
+                    <input type="date" name="data_validade" class="form-control" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Quantidade</label>
+                    <input type="number" step="0.001" name="quantidade" class="form-control" value="{{ item.quantidade }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Unidade</label>
+                    <select name="unidade" class="form-select">
+                        <option value="L" {% if item.unidade == 'L' %}selected{% endif %}>Litro</option>
+                        <option value="mL">Mililitro</option>
+                        <option value="kg">Quilograma</option>
+                        <option value="g">Grama</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Fornecedor</label>
+                    <input type="text" name="fornecedor" class="form-control" value="{{ item.nota.fornecedor }}">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Local de Armazenamento</label>
+                <input type="text" name="local_armazenamento" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success"><i class="bi bi-box-arrow-in-right"></i> Importar como Lote</button>
+            <a href="{% url 'notas:detail' item.nota.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

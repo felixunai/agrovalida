@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Desativar Defensivo</h2>
+
+<div class="alert alert-warning">
+    <p>Tem certeza que deseja desativar o defensivo <strong>{{ object.nome_comercial }}</strong>?</p>
+    <p class="mb-0">Os lotes associados continuarão existindo.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Desativar</button>
+    <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+{% endblock %}

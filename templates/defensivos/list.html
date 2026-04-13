@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Defensivos Agrícolas</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <form method="get" class="d-flex gap-2">
+        {{ filter.form.nome_comercial }}
+        {{ filter.form.classe }}
+        {{ filter.form.fabricante }}
+        <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+        <a href="{% url 'defensivos:list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+    </form>
+    <a href="{% url 'defensivos:create' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Novo Defensivo</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nome Comercial</th>
+                <th>Princípio Ativo</th>
+                <th>Classe</th>
+                <th>Registro MAPA</th>
+                <th>Fabricante</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in object_list %}
+            <tr>
+                <td><a href="{{ obj.get_absolute_url }}">{{ obj.nome_comercial }}</a></td>
+                <td>{{ obj.principio_ativo }}</td>
+                <td>{{ obj.get_classe_display }}</td>
+                <td>{{ obj.registro_mapa }}</td>
+                <td>{{ obj.fabricante }}</td>
+                <td>{% if obj.ativo %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-danger"></i>{% endif %}</td>
+                <td>
+                    <a href="{% url 'defensivos:update' obj.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                    <a href="{% url 'defensivos:delete' obj.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-center">Nenhum defensivo cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

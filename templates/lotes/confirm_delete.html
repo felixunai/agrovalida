@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Excluir Lote</h2>
+
+<div class="alert alert-danger">
+    <p>Tem certeza que deseja excluir o lote <strong>{{ object.numero_lote }}</strong> de <strong>{{ object.defensivo.nome_comercial }}</strong>?</p>
+    <p class="mb-0">Esta ação não pode ser desfeita.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Excluir Permanentemente</button>
+    <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+{% endblock %}
