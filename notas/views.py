@@ -9,6 +9,20 @@ from defensivos.models import Defensivo, ClasseDefensivo
 from lotes.models import Lote
 
 
+def _limpar_nota(nota):
+    itens = nota.itens.select_related('defensivo', 'lote').all()
+    lotes_ids = set()
+    defensivos_ids = set()
+    for item in itens:
+        if item.lote_id:
+            lotes_ids.add(item.lote_id)
+        if item.defensivo_id:
+            defensivos_ids.add(item.defensivo_id)
+    Lote.objects.filter(pk__in=lotes_ids).delete()
+    Defensivo.objects.filter(pk__in=defensivos_ids).delete()
+    nota.itens.all().delete()
+
+
 @login_required
 def nota_upload(request):
     if request.method == 'POST':
@@ -78,11 +92,7 @@ def nota_importar(request, pk):
 @require_POST
 def nota_apagar(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
-    for item in nota.itens.all():
-        if item.lote:
-            item.lote.delete()
-        if item.defensivo:
-            item.defensivo.delete()
+    _limpar_nota(nota)
     nota.delete()
     messages.success(request, 'Nota fiscal excluída com sucesso.')
     return redirect('notas:list')
@@ -92,12 +102,7 @@ def nota_apagar(request, pk):
 @require_POST
 def nota_limpar(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
-    for item in nota.itens.all():
-        if item.lote:
-            item.lote.delete()
-        if item.defensivo:
-            item.defensivo.delete()
-    nota.itens.all().delete()
+    _limpar_nota(nota)
     nota.processado = False
     nota.status_importacao = 'pendente'
     nota.numero = ''
