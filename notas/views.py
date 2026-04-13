@@ -48,8 +48,7 @@ def nota_detail(request, pk):
     itens = nota.itens.select_related('defensivo', 'lote').all()
     classes = ClasseDefensivo.choices
     for item in itens:
-        if not hasattr(item, '_classe_sugerida'):
-            item._classe_sugerida = inferir_classe(item.descricao)
+        item.classe_sugerida = inferir_classe(item.descricao)
     return render(request, 'notas/detail.html', {
         'nota': nota,
         'itens': itens,

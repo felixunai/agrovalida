@@ -95,7 +95,7 @@
                     {% else %}
                     <select name="classe_{{ item.pk }}" class="form-select form-select-sm">
                         {% for value, label in classes %}
-                        <option value="{{ value }}" {% if value == item._classe_sugerida %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if value == item.classe_sugerida %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                     {% endif %}
