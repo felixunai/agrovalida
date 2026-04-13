@@ -1,1 +1,1 @@
-web: python manage.py migrate --noinput 2>&1 && python manage.py createadmin 2>&1 && python manage.py collectstatic --noinput 2>&1 && exec gunicorn agrovalida.wsgi --log-file - --bind 0.0.0.0:$PORT
+web: bash entrypoint.sh
