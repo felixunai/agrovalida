@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'django_filter',
+    'django_filters',
     'widget_tweaks',
     'defensivos',
     'lotes',
