@@ -198,6 +198,123 @@ def extract_text_from_pdf(caminho_arquivo):
         return ''
 
 
+def _parse_money(val):
+    if not val:
+        return None
+    val = val.strip().replace('R$', '').replace('.', '').replace(',', '.').strip()
+    try:
+        return float(val)
+    except ValueError:
+        return None
+
+
+def parse_nfe_pdf_text(texto):
+    resultado = {
+        'numero': '',
+        'data_emissao': None,
+        'fornecedor': '',
+        'cnpj_fornecedor': '',
+        'itens': [],
+    }
+    if not texto:
+        return resultado
+
+    m = re.search(r'(?:NF-?e|NFe|Nota\s*Fiscal)[^0-9]*n[°ºo]?\s*(\d{1,10})', texto, re.IGNORECASE)
+    if not m:
+        m = re.search(r'(?:n[°ºo]|número|numero)[^0-9]*(\d{4,10})', texto, re.IGNORECASE)
+    if m:
+        resultado['numero'] = m.group(1)
+
+    for padrao in [
+        r'(?:data\s*(?:de\s*)?emiss[ãa]o|dhEmi|emiss[ãa]o)[^0-9]*(\d{2}[\-/]\d{2}[\-/]\d{4})',
+        r'(\d{2}[\-/]\d{2}[\-/]\d{4})',
+    ]:
+        m = re.search(padrao, texto, re.IGNORECASE)
+        if m:
+            resultado['data_emissao'] = _parse_data(m.group(1))
+            break
+
+    m = re.search(r'(?:emitente|fornecedor|raz[ãa]o\s*social|nome)[^0-9A-Z]*([A-Z][A-ZÀ-ÿ0-9\s&.\-]{3,60})', texto, re.IGNORECASE)
+    if m:
+        resultado['fornecedor'] = m.group(1).strip()
+
+    m = re.search(r'CNPJ[:\s]*(\d{2}\.?\d{3}\.?\d{3}[\/]?\d{4}[\-]?\d{2})', texto)
+    if m:
+        resultado['cnpj_fornecedor'] = re.sub(r'[.\-/]', '', m.group(1))
+
+    blocos = re.split(r'(?:\n|\r)\s*(?:\n|\r)', texto)
+    item_idx = 0
+    for bloco in blocos:
+        bloco = bloco.strip()
+        if len(bloco) < 5:
+            continue
+
+        m_qtd = re.search(r'(\d+[\.,]?\d*)\s*(?:UN|KG|L|LT|ML|BAG|CX|PC|SC|TON|g|mL|l|kg|bag|cx|un|Un)', bloco, re.IGNORECASE)
+        m_val = re.search(r'R?\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))\s*$', bloco.strip(), re.MULTILINE)
+        m_lote = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', bloco, re.IGNORECASE)
+        m_val_date = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
+        m_fab_date = re.search(r'(?:fabr(?:ica[çã]c)?[:\s]+|fabrica[çã]o[:\s]+)(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
+
+        if m_qtd or m_val or m_lote:
+            linhas = bloco.split('\n')
+            descricao = linhas[0].strip()[:200] if linhas else bloco[:200]
+            descricao = re.sub(r'^\d+\s*', '', descricao)
+
+            skip = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza']
+            if any(s in descricao.lower() for s in skip):
+                continue
+
+            item = {
+                'descricao': descricao,
+                'codigo_produto': '',
+                'ncm': '',
+                'quantidade': float(m_qtd.group(1).replace(',', '.')) if m_qtd else 1,
+                'unidade': '',
+                'valor_unitario': None,
+                'valor_total': _parse_money(m_val.group(1)) if m_val else None,
+                'numero_lote': m_lote.group(1).strip() if m_lote else '',
+                'data_fabricacao': _parse_data(m_fab_date.group(1)) if m_fab_date else None,
+                'data_validade': _parse_data(m_val_date.group(1)) if m_val_date else None,
+            }
+            if m_qtd:
+                item['unidade'] = m_qtd.group(2).upper() if m_qtd.group(2) else ''
+
+            resultado['itens'].append(item)
+            item_idx += 1
+
+    if not resultado['itens']:
+        linhas = texto.split('\n')
+        for linha in linhas:
+            linha = linha.strip()
+            if len(linha) < 5:
+                continue
+            m_qtd = re.search(r'(\d+[\.,]?\d*)\s*(?:UN|KG|L|LT|ML|BAG|CX|PC|SC|TON|g|mL|l|kg|bag|cx|un)', linha, re.IGNORECASE)
+            m_lote = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', linha, re.IGNORECASE)
+            m_val_date = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', linha, re.IGNORECASE)
+
+            skip = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza', 'base', 'valor', 'aliquota', 'origem', 'destino', 'frete', 'seguro', 'desconto']
+            if any(s in linha.lower() for s in skip):
+                continue
+
+            prod_words = ['semente', 'defensivo', 'herbicida', 'fungicida', 'inseticida', 'acaricida', 'adjuvante', 'regulador', 'biológico', 'biologico', 'adubo', 'fertilizante', 'npk', 'ureia', 'glifosato', 'roundup', 'atrativo', 'misto']
+            if any(w in linha.lower() for w in prod_words):
+                item = {
+                    'descricao': linha[:200],
+                    'codigo_produto': '',
+                    'ncm': '',
+                    'quantidade': float(m_qtd.group(1).replace(',', '.')) if m_qtd else 1,
+                    'unidade': m_qtd.group(2).upper() if m_qtd and m_qtd.group(2) else '',
+                    'valor_unitario': None,
+                    'valor_total': None,
+                    'numero_lote': m_lote.group(1).strip() if m_lote else '',
+                    'data_fabricacao': None,
+                    'data_validade': _parse_data(m_val_date.group(1)) if m_val_date else None,
+                }
+                resultado['itens'].append(item)
+
+    return resultado
+
+
 def processar_nota(nota):
     from .models import ItemNotaFiscal
 
@@ -231,6 +348,31 @@ def processar_nota(nota):
         texto = extract_text_from_pdf(caminho)
         nota.texto_extraido = texto
         nota.tipo = 'pdf'
+
+        dados = parse_nfe_pdf_text(texto)
+        if dados['numero']:
+            nota.numero = dados['numero']
+        if dados['data_emissao']:
+            nota.data_emissao = dados['data_emissao']
+        if dados['fornecedor']:
+            nota.fornecedor = dados['fornecedor']
+        if dados['cnpj_fornecedor']:
+            nota.cnpj_fornecedor = dados['cnpj_fornecedor']
+
+        for item_dados in dados['itens']:
+            ItemNotaFiscal.objects.create(
+                nota=nota,
+                descricao=item_dados['descricao'],
+                codigo_produto=item_dados.get('codigo_produto', ''),
+                ncm=item_dados.get('ncm', ''),
+                quantidade=item_dados.get('quantidade', 1),
+                unidade=item_dados.get('unidade', ''),
+                valor_unitario=item_dados.get('valor_unitario'),
+                valor_total=item_dados.get('valor_total'),
+                numero_lote=item_dados.get('numero_lote', ''),
+                data_fabricacao=item_dados.get('data_fabricacao'),
+                data_validade=item_dados.get('data_validade'),
+            )
 
     nota.processado = True
     nota.status_importacao = 'processado'
