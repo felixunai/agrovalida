@@ -1,1 +1,1 @@
-web: python setup.py && gunicorn agrovalida.wsgi
+web: python setup.py && gunicorn agrovalida.wsgi --bind 0.0.0.0:$PORT
