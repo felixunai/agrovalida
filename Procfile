@@ -1,1 +1,1 @@
-web: python setup.py && gunicorn agrovalida.wsgi --log-file - --bind 0.0.0.0:${PORT:-8080}
+web: gunicorn agrovalida.wsgi --log-file - --bind 0.0.0.0:${PORT:-8080}
