@@ -15,7 +15,7 @@ class NotaFiscal(models.Model):
     ]
 
     arquivo = models.FileField('arquivo', upload_to='notas/')
-    tipo = models.CharField('tipo', max_length=3, choices=TIPO_CHOICES)
+    tipo = models.CharField('tipo', max_length=3, choices=TIPO_CHOICES, default='xml')
     numero = models.CharField('número', max_length=50, blank=True, db_index=True)
     data_emissao = models.DateField('data de emissão', null=True, blank=True)
     fornecedor = models.CharField('fornecedor', max_length=300, blank=True)

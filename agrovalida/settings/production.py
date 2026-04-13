@@ -13,7 +13,7 @@ if env_path.exists():
     environ.Env.read_env(env_path)
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'insecure-change-me')
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
