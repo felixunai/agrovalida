@@ -1,0 +1,1 @@
+web: gunicorn agrovalida.wsgi --log-file -
