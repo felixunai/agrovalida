@@ -33,7 +33,10 @@ def nota_upload(request):
             nota.save()
             try:
                 processar_nota(nota)
-                messages.success(request, f'Nota {nota.numero or ""} processada com sucesso. Selecione o tipo de cada item e clique em Importar.')
+                if nota.tipo == 'pdf':
+                    messages.info(request, f'Nota {nota.numero or ""} processada. O PDF foi extraído como texto — os dados precisam ser cadastrados manualmente.')
+                else:
+                    messages.success(request, f'Nota {nota.numero or ""} processada com sucesso. Selecione o tipo de cada item e clique em Importar.')
             except Exception as e:
                 messages.warning(request, f'Nota salva, mas houve erro no processamento: {e}')
             return redirect('notas:detail', pk=nota.pk)

@@ -177,6 +177,15 @@
         </tbody>
     </table>
 </div>
+{% else %}
+{% if nota.tipo == 'pdf' and nota.texto_extraido %}
+<div class="alert alert-warning mt-4">
+    <i class="bi bi-info-circle"></i> Esta nota foi importada como PDF. Os dados foram extraídos como texto abaixo. Cadastre os produtos e lotes manualmente usando os menus <strong>Produtos</strong> e <strong>Lotes</strong>.
+</div>
+{% else %}
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle"></i> Nenhum item encontrado nesta nota.
+</div>
 {% endif %}
 {% endif %}
 
