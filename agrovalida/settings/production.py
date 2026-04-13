@@ -13,10 +13,8 @@ if env_path.exists():
     environ.Env.read_env(env_path)
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'insecure-change-me')
-DEBUG = env.bool('DEBUG', default=False)
-
-_allowed = os.environ.get('ALLOWED_HOSTS', '*')
-ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',')]
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
