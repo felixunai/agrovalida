@@ -4,7 +4,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.conf import settings
 from lotes.models import Lote
-from defensivos.models import Defensivo
+from defensivos.models import Defensivo, ClasseDefensivo
 from notas.models import NotaFiscal
 
 
@@ -83,7 +83,7 @@ def relatorio_vencimento(request):
         'status': status,
         'classe': classe,
         'fornecedor': fornecedor,
-        'classes': Defensivo.ClasseDefensivo.choices,
+        'classes': ClasseDefensivo.choices,
         'hoje': hoje,
         'dias_alerta': dias_alerta,
     }
