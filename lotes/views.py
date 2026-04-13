@@ -8,7 +8,7 @@ from .filters import LoteFilter
 
 @login_required
 def lote_list(request):
-    queryset = Lote.objects.select_related('defensivo').all()
+    queryset = Lote.objects.filter(cadastrado_por=request.user).select_related('defensivo')
     filtro = LoteFilter(request.GET, queryset=queryset)
     return render(request, 'lotes/list.html', {'filter': filtro, 'object_list': filtro.qs})
 
@@ -30,7 +30,7 @@ def lote_create(request):
 
 @login_required
 def lote_update(request, pk):
-    obj = get_object_or_404(Lote, pk=pk)
+    obj = get_object_or_404(Lote, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
         form = LoteForm(request.POST, instance=obj)
         if form.is_valid():
@@ -44,13 +44,13 @@ def lote_update(request, pk):
 
 @login_required
 def lote_detail(request, pk):
-    obj = get_object_or_404(Lote, pk=pk)
+    obj = get_object_or_404(Lote, pk=pk, cadastrado_por=request.user)
     return render(request, 'lotes/detail.html', {'object': obj})
 
 
 @login_required
 def lote_delete(request, pk):
-    obj = get_object_or_404(Lote, pk=pk)
+    obj = get_object_or_404(Lote, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
         obj.delete()
         messages.success(request, f'Lote "{obj.numero_lote}" excluído.')

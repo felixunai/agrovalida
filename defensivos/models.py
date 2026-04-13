@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.urls import reverse
 
 
@@ -35,6 +36,10 @@ class Defensivo(models.Model):
     formulacao = models.CharField('formulação', max_length=100, blank=True)
     concentracao = models.CharField('concentração', max_length=100, blank=True)
     ativo = models.BooleanField('ativo', default=True)
+    cadastrado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='cadastrado por',
+    )
 
     class Meta:
         ordering = ['nome_comercial']

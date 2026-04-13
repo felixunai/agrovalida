@@ -14,22 +14,24 @@ def dashboard(request):
     dias_alerta = getattr(settings, 'ALERTA_DIAS_VENCIMENTO', 90)
     limite_alerta = hoje + timezone.timedelta(days=dias_alerta)
 
-    lotes_vencidos = Lote.objects.filter(data_validade__lt=hoje).select_related('defensivo')
-    lotes_vencendo = Lote.objects.filter(
+    user_lotes = Lote.objects.filter(cadastrado_por=request.user)
+
+    lotes_vencidos = user_lotes.filter(data_validade__lt=hoje).select_related('defensivo')
+    lotes_vencendo = user_lotes.filter(
         data_validade__gte=hoje, data_validade__lte=limite_alerta
     ).select_related('defensivo')
-    lotes_vigentes = Lote.objects.filter(data_validade__gt=limite_alerta).select_related('defensivo')
+    lotes_vigentes = user_lotes.filter(data_validade__gt=limite_alerta).select_related('defensivo')
 
-    total_defensivos = Defensivo.objects.filter(ativo=True).count()
-    total_lotes = Lote.objects.count()
+    total_defensivos = Defensivo.objects.filter(cadastrado_por=request.user, ativo=True).count()
+    total_lotes = user_lotes.count()
     total_vencidos = lotes_vencidos.count()
     total_vencendo = lotes_vencendo.count()
     total_vigentes = lotes_vigentes.count()
-    notas_pendentes = NotaFiscal.objects.filter(processado=False).count()
+    notas_pendentes = NotaFiscal.objects.filter(cadastrado_por=request.user, processado=False).count()
 
     lotes_proximos = (lotes_vencendo | lotes_vencidos).order_by('data_validade')[:20]
 
-    por_classe = Lote.objects.values(
+    por_classe = user_lotes.values(
         'defensivo__classe'
     ).annotate(
         total=Count('id'),
@@ -61,7 +63,7 @@ def relatorio_vencimento(request):
 
     status = request.GET.get('status', 'todos')
 
-    lotes = Lote.objects.select_related('defensivo').order_by('data_validade')
+    lotes = Lote.objects.filter(cadastrado_por=request.user).select_related('defensivo').order_by('data_validade')
 
     if status == 'vencido':
         lotes = lotes.filter(data_validade__lt=hoje)

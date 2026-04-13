@@ -8,7 +8,7 @@ from .filters import DefensivoFilter
 
 @login_required
 def defensivo_list(request):
-    queryset = Defensivo.objects.all()
+    queryset = Defensivo.objects.filter(cadastrado_por=request.user)
     filtro = DefensivoFilter(request.GET, queryset=queryset)
     return render(request, 'defensivos/list.html', {'filter': filtro, 'object_list': filtro.qs})
 
@@ -18,7 +18,9 @@ def defensivo_create(request):
     if request.method == 'POST':
         form = DefensivoForm(request.POST)
         if form.is_valid():
-            obj = form.save()
+            obj = form.save(commit=False)
+            obj.cadastrado_por = request.user
+            obj.save()
             messages.success(request, f'Produto "{obj.nome_comercial}" cadastrado com sucesso.')
             return redirect(obj)
     else:
@@ -28,7 +30,7 @@ def defensivo_create(request):
 
 @login_required
 def defensivo_update(request, pk):
-    obj = get_object_or_404(Defensivo, pk=pk)
+    obj = get_object_or_404(Defensivo, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
         form = DefensivoForm(request.POST, instance=obj)
         if form.is_valid():
@@ -42,7 +44,7 @@ def defensivo_update(request, pk):
 
 @login_required
 def defensivo_detail(request, pk):
-    obj = get_object_or_404(Defensivo, pk=pk)
+    obj = get_object_or_404(Defensivo, pk=pk, cadastrado_por=request.user)
     from lotes.models import Lote
     lotes = Lote.objects.filter(defensivo=obj).select_related('defensivo')
     return render(request, 'defensivos/detail.html', {'object': obj, 'lotes': lotes})
@@ -50,7 +52,7 @@ def defensivo_detail(request, pk):
 
 @login_required
 def defensivo_delete(request, pk):
-    obj = get_object_or_404(Defensivo, pk=pk)
+    obj = get_object_or_404(Defensivo, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
         obj.ativo = False
         obj.save()

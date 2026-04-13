@@ -44,7 +44,7 @@ def nota_upload(request):
 
 @login_required
 def nota_detail(request, pk):
-    nota = get_object_or_404(NotaFiscal, pk=pk)
+    nota = get_object_or_404(NotaFiscal, pk=pk, cadastrado_por=request.user)
     itens = nota.itens.select_related('defensivo', 'lote').all()
     classes = ClasseDefensivo.choices
     for item in itens:
@@ -58,14 +58,14 @@ def nota_detail(request, pk):
 
 @login_required
 def nota_list(request):
-    notas = NotaFiscal.objects.all()
+    notas = NotaFiscal.objects.filter(cadastrado_por=request.user)
     return render(request, 'notas/list.html', {'object_list': notas})
 
 
 @login_required
 @require_POST
 def nota_importar(request, pk):
-    nota = get_object_or_404(NotaFiscal, pk=pk)
+    nota = get_object_or_404(NotaFiscal, pk=pk, cadastrado_por=request.user)
     if nota.status_importacao == 'importado':
         messages.info(request, 'Esta nota já foi importada.')
         return redirect('notas:detail', pk=nota.pk)
@@ -90,7 +90,7 @@ def nota_importar(request, pk):
 @login_required
 @require_POST
 def nota_apagar(request, pk):
-    nota = get_object_or_404(NotaFiscal, pk=pk)
+    nota = get_object_or_404(NotaFiscal, pk=pk, cadastrado_por=request.user)
     _limpar_nota(nota)
     nota.delete()
     messages.success(request, 'Nota fiscal excluída com sucesso.')
@@ -100,7 +100,7 @@ def nota_apagar(request, pk):
 @login_required
 @require_POST
 def nota_limpar(request, pk):
-    nota = get_object_or_404(NotaFiscal, pk=pk)
+    nota = get_object_or_404(NotaFiscal, pk=pk, cadastrado_por=request.user)
     _limpar_nota(nota)
     nota.processado = False
     nota.status_importacao = 'pendente'
@@ -116,10 +116,10 @@ def nota_limpar(request, pk):
 
 @login_required
 def importar_item_lote(request, item_pk):
-    item = get_object_or_404(ItemNotaFiscal, pk=item_pk)
+    item = get_object_or_404(ItemNotaFiscal, pk=item_pk, nota__cadastrado_por=request.user)
     if request.method == 'POST':
         defensivo_id = request.POST.get('defensivo')
-        defensivo = get_object_or_404(Defensivo, pk=defensivo_id)
+        defensivo = get_object_or_404(Defensivo, pk=defensivo_id, cadastrado_por=request.user)
 
         lote = Lote.objects.create(
             defensivo=defensivo,
@@ -139,7 +139,7 @@ def importar_item_lote(request, item_pk):
         messages.success(request, f'Lote "{lote.numero_lote}" importado com sucesso.')
         return redirect('lotes:detail', pk=lote.pk)
 
-    defensivos = Defensivo.objects.filter(ativo=True)
+    defensivos = Defensivo.objects.filter(ativo=True, cadastrado_por=request.user)
     return render(request, 'notas/importar_item.html', {
         'item': item,
         'defensivos': defensivos,
