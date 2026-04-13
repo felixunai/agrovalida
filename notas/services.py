@@ -240,7 +240,7 @@ def processar_nota(nota):
 def importar_nota_automatico(nota, user=None):
     from .models import ItemNotaFiscal
     from defensivos.models import Defensivo
-    from lotes.models import Lote
+    from lotes.models import Lote, UnidadeMedida
 
     itens = nota.itens.filter(defensivo__isnull=True)
     if not itens.exists():
@@ -294,7 +294,7 @@ def importar_nota_automatico(nota, user=None):
 
         if not lote:
             unidade = inferir_unidade(item.unidade)
-            if unidade not in dict(Lote.UnidadeMedida.choices).keys():
+            if unidade not in dict(UnidadeMedida.choices).keys():
                 unidade = 'un'
 
             lote = Lote.objects.create(
