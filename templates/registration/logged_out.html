@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Saiu - AgroValida{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4 text-center">
+        <h2>Você saiu do sistema</h2>
+        <p class="mt-3">Obrigado por usar o AgroValida.</p>
+        <a href="{% url 'login' %}" class="btn btn-success mt-3"><i class="bi bi-box-arrow-in-right"></i> Entrar novamente</a>
+    </div>
+</div>
+{% endblock %}

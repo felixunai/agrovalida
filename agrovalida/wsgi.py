@@ -17,8 +17,11 @@ logger.info('=== Migrations complete ===')
 
 User = get_user_model()
 if not User.objects.filter(is_superuser=True).exists():
-    User.objects.create_superuser('admin', 'admin@agrovalida.com', 'admin123')
+    admin = User.objects.create_superuser('admin', 'admin@agrovalida.com', 'admin123')
     logger.info('=== Superuser created ===')
+    from accounts.models import Plano, UserProfile
+    plano_pro, _ = Plano.objects.get_or_create(nome='Profissional', defaults={'preco': 500, 'descricao': 'Acesso completo ao sistema com todas as funcionalidades', 'ativo': True})
+    profile, _ = UserProfile.objects.get_or_create(user=admin, defaults={'plano': plano_pro, 'plano_ativo': True})
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

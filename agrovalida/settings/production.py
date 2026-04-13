@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'defensivos',
     'lotes',
     'notas',
+    'accounts',
     'dashboard',
 ]
 
@@ -105,8 +106,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/painel/'
+LOGOUT_REDIRECT_URL = '/'
 
 ALERTA_DIAS_VENCIMENTO = 90
 
