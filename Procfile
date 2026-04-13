@@ -1,1 +1,1 @@
-web: python manage.py migrate --noinput && python manage.py createadmin --noinput 2>/dev/null; gunicorn agrovalida.wsgi
+web: gunicorn agrovalida.wsgi
