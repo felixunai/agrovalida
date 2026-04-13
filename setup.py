@@ -20,6 +20,9 @@ else:
     print('Superuser already exists, skipping.')
 
 print('=== Collecting static files ===')
-call_command('collectstatic', '--noinput')
+try:
+    call_command('collectstatic', '--noinput')
+except Exception as e:
+    print(f'Warning: collectstatic failed: {e}')
 
 print('=== Setup complete ===')
