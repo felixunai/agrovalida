@@ -1,17 +1,22 @@
+import os
 import environ
 from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    environ.Env.read_env(env_path)
 
-environ.Env.read_env(BASE_DIR / '.env', overrides=True)
+SECRET_KEY = os.environ.get('SECRET_KEY', 'insecure-change-me')
+DEBUG = env.bool('DEBUG', default=False)
 
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+_allowed = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -71,9 +76,10 @@ DATABASES = {
     }
 }
 
-if env('DATABASE_URL', default=''):
+_database_url = os.environ.get('DATABASE_URL', '')
+if _database_url:
     import dj_database_url
-    DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'), conn_max_age=600)
+    DATABASES['default'] = dj_database_url.parse(_database_url, conn_max_age=600)
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -107,6 +113,3 @@ LOGOUT_REDIRECT_URL = '/login/'
 ALERTA_DIAS_VENCIMENTO = 90
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=False)
-SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=False)
-CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=False)
