@@ -76,6 +76,20 @@ def nota_importar(request, pk):
 
 @login_required
 @require_POST
+def nota_apagar(request, pk):
+    nota = get_object_or_404(NotaFiscal, pk=pk)
+    for item in nota.itens.all():
+        if item.lote:
+            item.lote.delete()
+        if item.defensivo:
+            item.defensivo.delete()
+    nota.delete()
+    messages.success(request, 'Nota fiscal excluída com sucesso.')
+    return redirect('notas:list')
+
+
+@login_required
+@require_POST
 def nota_limpar(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
     for item in nota.itens.all():

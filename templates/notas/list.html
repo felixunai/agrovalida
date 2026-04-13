@@ -13,7 +13,7 @@
                 <th>Fornecedor</th>
                 <th>Data Emissão</th>
                 <th>Tipo</th>
-                <th>Processado</th>
+                <th>Status</th>
                 <th>Data Upload</th>
                 <th>Ações</th>
             </tr>
@@ -25,9 +25,20 @@
                 <td>{{ obj.fornecedor|default:"-" }}</td>
                 <td>{{ obj.data_emissao|date:"d/m/Y"|default:"-" }}</td>
                 <td>{{ obj.get_tipo_display }}</td>
-                <td>{% if obj.processado %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-clock text-warning"></i>{% endif %}</td>
+                <td>{% if obj.processado %}
+                    {% if obj.status_importacao == 'importado' %}<span class="badge bg-success">Importado</span>
+                    {% elif obj.status_importacao == 'processado' %}<span class="badge bg-warning text-dark">Processado</span>
+                    {% else %}<span class="badge bg-secondary">Pendente</span>{% endif %}
+                    {% else %}<span class="badge bg-secondary">Pendente</span>{% endif %}
+                </td>
                 <td>{{ obj.criado_em|date:"d/m/Y H:i" }}</td>
-                <td><a href="{% url 'notas:detail' obj.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+                <td>
+                    <a href="{% url 'notas:detail' obj.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                    <form method="post" action="{% url 'notas:apagar' obj.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta nota e todos os defensivos/lotes criados a partir dela?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="7" class="text-center">Nenhuma nota fiscal cadastrada.</td></tr>

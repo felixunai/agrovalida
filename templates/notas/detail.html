@@ -24,9 +24,13 @@
                     {% if nota.processado %}
                     <form method="post" action="{% url 'notas:limpar' nota.pk %}" class="d-inline" onsubmit="return confirm('Tem certeza que deseja limpar todo o processamento? Isso excluirá os defensivos e lotes criados a partir desta nota.')">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger ms-2"><i class="bi bi-trash"></i> Limpar</button>
+                        <button type="submit" class="btn btn-sm btn-outline-warning ms-2"><i class="bi bi-arrow-counterclockwise"></i> Limpar</button>
                     </form>
                     {% endif %}
+                    <form method="post" action="{% url 'notas:apagar' nota.pk %}" class="d-inline" onsubmit="return confirm('Tem certeza que deseja EXCLUIR esta nota? Isso também excluirá os defensivos e lotes criados a partir dela. Esta ação não pode ser desfeita.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger ms-2"><i class="bi bi-trash"></i> Apagar Nota</button>
+                    </form>
                 </div>
             </div>
             <div class="card-body">
