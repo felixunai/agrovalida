@@ -1,1 +1,1 @@
-web: python setup.py && gunicorn agrovalida.wsgi --bind 0.0.0.0:$PORT
+web: /bin/sh -c "python setup.py && exec gunicorn agrovalida.wsgi --bind 0.0.0.0:${PORT:-8000}"
