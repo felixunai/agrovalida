@@ -9,6 +9,7 @@ urlpatterns = [
     path('defensivos/', include('defensivos.urls')),
     path('lotes/', include('lotes.urls')),
     path('notas/', include('notas.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:
