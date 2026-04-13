@@ -11,7 +11,7 @@ environ.Env.read_env(BASE_DIR / '.env', overrides=True)
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.up.railway.app', '.railway.app'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
