@@ -30,9 +30,14 @@ PALAVRAS_UNIDADE = {
     'kg': 'kg', 'quilo': 'kg', 'quilos': 'kg',
     'g': 'g', 'grama': 'g', 'gramas': 'g',
     'cx': 'cx', 'caixa': 'cx', 'saco': 'cx', 'pacote': 'cx',
-    'bag': 'BAG', 'saco': 'BAG', 'bolsa': 'BAG',
+    'bag': 'BAG', 'bolsa': 'BAG',
     'un': 'un', 'unidade': 'un',
 }
+
+_QTD_RE = re.compile(
+    r'(\d+[\.,]?\d*)\s*(UN|KG|L|LT|ML|BAG|CX|PC|SC|TON|g|mL|l|kg|bag|cx|un|Un)',
+    re.IGNORECASE,
+)
 
 
 def inferir_classe(descricao):
@@ -61,6 +66,16 @@ def _parse_data(texto):
     return None
 
 
+def _parse_money(val):
+    if not val:
+        return None
+    val = val.strip().replace('R$', '').replace('.', '').replace(',', '.').strip()
+    try:
+        return float(val)
+    except ValueError:
+        return None
+
+
 def _parse_inf_ad_prod(texto):
     resultado = {
         'numero_lote': '',
@@ -70,7 +85,10 @@ def _parse_inf_ad_prod(texto):
     if not texto:
         return resultado
 
-    match_lote = re.search(r'Lote:\s*(.+?)(?:\s*Pen\.|\s*At\.|\s*Germ\.|\s*Pur\.|\s*Val\.|\s*Fab\.|\s*RENASEM|\s*-\s*\d{2}|\s*$)', texto, re.IGNORECASE)
+    match_lote = re.search(
+        r'Lote:\s*(.+?)(?:\s*Pen\.|\s*At\.|\s*Germ\.|\s*Pur\.|\s*Val\.|\s*Fab\.|\s*RENASEM|\s*-\s*\d{2}|\s*$)',
+        texto, re.IGNORECASE,
+    )
     if match_lote:
         resultado['numero_lote'] = match_lote.group(1).strip().rstrip(' -')
 
@@ -198,16 +216,6 @@ def extract_text_from_pdf(caminho_arquivo):
         return ''
 
 
-def _parse_money(val):
-    if not val:
-        return None
-    val = val.strip().replace('R$', '').replace('.', '').replace(',', '.').strip()
-    try:
-        return float(val)
-    except ValueError:
-        return None
-
-
 def parse_nfe_pdf_text(texto):
     resultado = {
         'numero': '',
@@ -217,105 +225,97 @@ def parse_nfe_pdf_text(texto):
         'itens': [],
     }
     try:
-        _parse_nfe_pdf_text_inner(texto, resultado)
-    except Exception:
-        pass
-    return resultado
+        if not texto:
+            return resultado
 
-
-def _parse_nfe_pdf_text_inner(texto, resultado):
-        return resultado
-
-    m = re.search(r'(?:NF-?e|NFe|Nota\s*Fiscal)[^0-9]*n[°ºo]?\s*(\d{1,10})', texto, re.IGNORECASE)
-    if not m:
-        m = re.search(r'(?:n[°ºo]|número|numero)[^0-9]*(\d{4,10})', texto, re.IGNORECASE)
-    if m:
-        resultado['numero'] = m.group(1)
-
-    for padrao in [
-        r'(?:data\s*(?:de\s*)?emiss[ãa]o|dhEmi|emiss[ãa]o)[^0-9]*(\d{2}[\-/]\d{2}[\-/]\d{4})',
-        r'(\d{2}[\-/]\d{2}[\-/]\d{4})',
-    ]:
-        m = re.search(padrao, texto, re.IGNORECASE)
+        m = re.search(r'(?:NF-?e|NFe|Nota\s*Fiscal)[^0-9]*n[°ºo]?\s*(\d{1,10})', texto, re.IGNORECASE)
+        if not m:
+            m = re.search(r'(?:n[°ºo]|número|numero)[^0-9]*(\d{4,10})', texto, re.IGNORECASE)
         if m:
-            resultado['data_emissao'] = _parse_data(m.group(1))
-            break
+            resultado['numero'] = m.group(1)
 
-    m = re.search(r'(?:emitente|fornecedor|raz[ãa]o\s*social|nome)[^0-9A-Z]*([A-Z][A-ZÀ-ÿ0-9\s&.\-]{3,60})', texto, re.IGNORECASE)
-    if m:
-        resultado['fornecedor'] = m.group(1).strip()
+        for padrao in [
+            r'(?:data\s*(?:de\s*)?emiss[ãa]o|dhEmi|emiss[ãa]o)[^0-9]*(\d{2}[\-/]\d{2}[\-/]\d{4})',
+            r'(\d{2}[\-/]\d{2}[\-/]\d{4})',
+        ]:
+            m = re.search(padrao, texto, re.IGNORECASE)
+            if m:
+                resultado['data_emissao'] = _parse_data(m.group(1))
+                break
 
-    m = re.search(r'CNPJ[:\s]*(\d{2}\.?\d{3}\.?\d{3}[\/]?\d{4}[\-]?\d{2})', texto)
-    if m:
-        resultado['cnpj_fornecedor'] = re.sub(r'[.\-/]', '', m.group(1))
+        m = re.search(r'(?:emitente|fornecedor|raz[ãa]o\s*social)[^0-9A-Z]*([A-Z][A-ZÀ-ÿ0-9\s&.\-]{3,60})', texto, re.IGNORECASE)
+        if m:
+            resultado['fornecedor'] = m.group(1).strip()
 
-    blocos = re.split(r'(?:\n|\r)\s*(?:\n|\r)', texto)
-    item_idx = 0
-    _QTD_RE = re.compile(r'(\d+[\.,]?\d*)\s*(UN|KG|L|LT|ML|BAG|CX|PC|SC|TON|g|mL|l|kg|bag|cx|un|Un)', re.IGNORECASE)
+        m = re.search(r'CNPJ[:\s]*(\d{2}\.?\d{3}\.?\d{3}[\/]?\d{4}[\-]?\d{2})', texto)
+        if m:
+            resultado['cnpj_fornecedor'] = re.sub(r'[.\-/]', '', m.group(1))
 
-    for bloco in blocos:
-        bloco = bloco.strip()
-        if len(bloco) < 5:
-            continue
-
-        m_qtd = _QTD_RE.search(bloco)
-        m_val = re.search(r'R?\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))', bloco)
-        m_lote = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', bloco, re.IGNORECASE)
-        m_val_date = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
-        m_fab_date = re.search(r'(?:fabr(?:ica[çã]c)?[:\s]+|fabrica[çã]o[:\s]+)(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
-
-        if m_qtd or m_val or m_lote:
-            linhas = bloco.split('\n')
-            descricao = linhas[0].strip()[:200] if linhas else bloco[:200]
-            descricao = re.sub(r'^\d+\s*', '', descricao)
-
-            skip = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza']
-            if any(s in descricao.lower() for s in skip):
+        blocos = re.split(r'(?:\n|\r)\s*(?:\n|\r)', texto)
+        for bloco in blocos:
+            bloco = bloco.strip()
+            if len(bloco) < 5:
                 continue
 
-            item = {
-                'descricao': descricao,
-                'codigo_produto': '',
-                'ncm': '',
-                'quantidade': float(m_qtd.group(1).replace(',', '.')) if m_qtd else 1,
-                'unidade': m_qtd.group(2).upper() if m_qtd else '',
-                'valor_unitario': None,
-                'valor_total': _parse_money(m_val.group(1)) if m_val else None,
-                'numero_lote': m_lote.group(1).strip() if m_lote else '',
-                'data_fabricacao': _parse_data(m_fab_date.group(1)) if m_fab_date else None,
-                'data_validade': _parse_data(m_val_date.group(1)) if m_val_date else None,
-            }
+            m_qtd = _QTD_RE.search(bloco)
+            m_val = re.search(r'R?\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))', bloco)
+            m_lote = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', bloco, re.IGNORECASE)
+            m_val_date = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
+            m_fab_date = re.search(r'(?:fabr(?:ica[çã]c)?[:\s]+|fabrica[çã]o[:\s]+)(\d{2}[\-/]\d{2}[\-/]\d{4})', bloco, re.IGNORECASE)
 
-            resultado['itens'].append(item)
-            item_idx += 1
+            if m_qtd or m_val or m_lote:
+                linhas = bloco.split('\n')
+                descricao = linhas[0].strip()[:200] if linhas else bloco[:200]
+                descricao = re.sub(r'^\d+\s*', '', descricao)
 
-    if not resultado['itens']:
-        _PROD_WORDS = ['semente', 'defensivo', 'herbicida', 'fungicida', 'inseticida', 'acaricida', 'adjuvante', 'regulador', 'biológico', 'biologico', 'adubo', 'fertilizante', 'npk', 'ureia', 'glifosato', 'roundup', 'atrativo', 'misto']
-        _SKIP_WORDS = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza', 'base', 'valor', 'aliquota', 'origem', 'destino', 'frete', 'seguro', 'desconto']
-        linhas = texto.split('\n')
-        for linha in linhas:
-            linha = linha.strip()
-            if len(linha) < 5:
-                continue
-            if any(s in linha.lower() for s in _SKIP_WORDS):
-                continue
-            if any(w in linha.lower() for w in _PROD_WORDS):
-                m_qtd2 = _QTD_RE.search(linha)
-                m_lote2 = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', linha, re.IGNORECASE)
-                m_val2 = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', linha, re.IGNORECASE)
+                skip = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza']
+                if any(s in descricao.lower() for s in skip):
+                    continue
+
                 item = {
-                    'descricao': linha[:200],
+                    'descricao': descricao,
                     'codigo_produto': '',
                     'ncm': '',
-                    'quantidade': float(m_qtd2.group(1).replace(',', '.')) if m_qtd2 else 1,
-                    'unidade': m_qtd2.group(2).upper() if m_qtd2 else '',
+                    'quantidade': float(m_qtd.group(1).replace(',', '.')) if m_qtd else 1,
+                    'unidade': m_qtd.group(2).upper() if m_qtd else '',
                     'valor_unitario': None,
-                    'valor_total': None,
-                    'numero_lote': m_lote2.group(1).strip() if m_lote2 else '',
-                    'data_fabricacao': None,
-                    'data_validade': _parse_data(m_val2.group(1)) if m_val2 else None,
+                    'valor_total': _parse_money(m_val.group(1)) if m_val else None,
+                    'numero_lote': m_lote.group(1).strip() if m_lote else '',
+                    'data_fabricacao': _parse_data(m_fab_date.group(1)) if m_fab_date else None,
+                    'data_validade': _parse_data(m_val_date.group(1)) if m_val_date else None,
                 }
                 resultado['itens'].append(item)
+
+        if not resultado['itens']:
+            _PROD_WORDS = ['semente', 'defensivo', 'herbicida', 'fungicida', 'inseticida', 'acaricida', 'adjuvante', 'regulador', 'biológico', 'biologico', 'adubo', 'fertilizante', 'npk', 'ureia', 'glifosato', 'roundup', 'atrativo', 'misto']
+            _SKIP_WORDS = ['total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins', 'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente', 'endere', 'telefone', 'inscri', 'natureza', 'base', 'valor', 'aliquota', 'origem', 'destino', 'frete', 'seguro', 'desconto']
+            linhas = texto.split('\n')
+            for linha in linhas:
+                linha = linha.strip()
+                if len(linha) < 5:
+                    continue
+                if any(s in linha.lower() for s in _SKIP_WORDS):
+                    continue
+                if any(w in linha.lower() for w in _PROD_WORDS):
+                    m_qtd2 = _QTD_RE.search(linha)
+                    m_lote2 = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', linha, re.IGNORECASE)
+                    m_val2 = re.search(r'(?:validade|val|vencim(?:ento)?)[:\s]+(\d{2}[\-/]\d{2}[\-/]\d{4})', linha, re.IGNORECASE)
+                    item = {
+                        'descricao': linha[:200],
+                        'codigo_produto': '',
+                        'ncm': '',
+                        'quantidade': float(m_qtd2.group(1).replace(',', '.')) if m_qtd2 else 1,
+                        'unidade': m_qtd2.group(2).upper() if m_qtd2 else '',
+                        'valor_unitario': None,
+                        'valor_total': None,
+                        'numero_lote': m_lote2.group(1).strip() if m_lote2 else '',
+                        'data_fabricacao': None,
+                        'data_validade': _parse_data(m_val2.group(1)) if m_val2 else None,
+                    }
+                    resultado['itens'].append(item)
+
+    except Exception:
+        pass
 
     return resultado
 
@@ -424,6 +424,7 @@ def importar_nota_automatico(nota, user=None, classes_por_item=None):
                 registro_mapa=codigo,
                 fabricante=nota.fornecedor or '',
                 ativo=True,
+                cadastrado_por=user,
             )
             defensivos_criados += 1
 
