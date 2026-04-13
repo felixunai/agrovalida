@@ -1,1 +1,1 @@
-web: python setup.py && gunicorn agrovalida.wsgi --log-file -
+web: python setup.py && gunicorn agrovalida.wsgi
