@@ -237,7 +237,7 @@ def processar_nota(nota):
     nota.save()
 
 
-def importar_nota_automatico(nota, user=None):
+def importar_nota_automatico(nota, user=None, classes_por_item=None):
     from .models import ItemNotaFiscal
     from defensivos.models import Defensivo
     from lotes.models import Lote, UnidadeMedida
@@ -253,6 +253,10 @@ def importar_nota_automatico(nota, user=None):
         descricao = item.descricao.strip()
         codigo = item.codigo_produto.strip() if item.codigo_produto else ''
 
+        classe = inferir_classe(descricao)
+        if classes_por_item and item.pk in classes_por_item:
+            classe = classes_por_item[item.pk]
+
         defensivo = None
         if codigo:
             defensivo = Defensivo.objects.filter(
@@ -265,7 +269,6 @@ def importar_nota_automatico(nota, user=None):
             ).first()
 
         if not defensivo:
-            classe = inferir_classe(descricao)
             unidade = inferir_unidade(item.unidade)
 
             defensivo = Defensivo.objects.create(

@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 from .models import NotaFiscal, ItemNotaFiscal
 from .forms import NotaFiscalUploadForm
-from .services import processar_nota, importar_nota_automatico
-from defensivos.models import Defensivo
+from .services import processar_nota, importar_nota_automatico, inferir_classe
+from defensivos.models import Defensivo, ClasseDefensivo
 from lotes.models import Lote
 
 
@@ -18,8 +19,7 @@ def nota_upload(request):
             nota.save()
             try:
                 processar_nota(nota)
-                importar_nota_automatico(nota, user=request.user)
-                messages.success(request, f'Nota {nota.numero or ""} processada e importada com sucesso.')
+                messages.success(request, f'Nota {nota.numero or ""} processada com sucesso. Selecione o tipo de cada item e clique em Importar.')
             except Exception as e:
                 messages.warning(request, f'Nota salva, mas houve erro no processamento: {e}')
             return redirect('notas:detail', pk=nota.pk)
@@ -32,7 +32,15 @@ def nota_upload(request):
 def nota_detail(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
     itens = nota.itens.select_related('defensivo', 'lote').all()
-    return render(request, 'notas/detail.html', {'nota': nota, 'itens': itens})
+    classes = ClasseDefensivo.choices
+    for item in itens:
+        if not hasattr(item, '_classe_sugerida'):
+            item._classe_sugerida = inferir_classe(item.descricao)
+    return render(request, 'notas/detail.html', {
+        'nota': nota,
+        'itens': itens,
+        'classes': classes,
+    })
 
 
 @login_required
@@ -42,17 +50,49 @@ def nota_list(request):
 
 
 @login_required
+@require_POST
 def nota_importar(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
     if nota.status_importacao == 'importado':
         messages.info(request, 'Esta nota já foi importada.')
         return redirect('notas:detail', pk=nota.pk)
 
-    defensivos_criados, lotes_criados = importar_nota_automatico(nota, user=request.user)
+    tipos = {}
+    for key, value in request.POST.items():
+        if key.startswith('classe_'):
+            try:
+                item_id = int(key.replace('classe_', ''))
+                tipos[item_id] = value
+            except (ValueError, TypeError):
+                pass
+
+    defensivos_criados, lotes_criados = importar_nota_automatico(nota, user=request.user, classes_por_item=tipos)
     messages.success(
         request,
-        f'Importação concluída: {defensivos_criados} defensivo(s) e {lotes_criados} lote(s) criados.'
+        f'Importação concluída: {defensivos_criados} produto(s) e {lotes_criados} lote(s) criados.'
     )
+    return redirect('notas:detail', pk=nota.pk)
+
+
+@login_required
+@require_POST
+def nota_limpar(request, pk):
+    nota = get_object_or_404(NotaFiscal, pk=pk)
+    for item in nota.itens.all():
+        if item.lote:
+            item.lote.delete()
+        if item.defensivo:
+            item.defensivo.delete()
+    nota.itens.all().delete()
+    nota.processado = False
+    nota.status_importacao = 'pendente'
+    nota.numero = ''
+    nota.data_emissao = None
+    nota.fornecedor = ''
+    nota.cnpj_fornecedor = ''
+    nota.texto_extraido = ''
+    nota.save()
+    messages.success(request, 'Processamento da nota limpo. Você pode reprocessar fazendo upload novamente.')
     return redirect('notas:detail', pk=nota.pk)
 
 
