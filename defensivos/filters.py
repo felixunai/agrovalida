@@ -1,10 +1,10 @@
 import django_filters
-from .models import Defensivo
+from .models import Defensivo, ClasseDefensivo
 
 
 class DefensivoFilter(django_filters.FilterSet):
     nome_comercial = django_filters.CharFilter(lookup_expr='icontains', label='Nome')
-    classe = django_filters.ChoiceFilter(choices=Defensivo.ClasseDefensivo.choices)
+    classe = django_filters.ChoiceFilter(choices=ClasseDefensivo.choices)
     fabricante = django_filters.CharFilter(lookup_expr='icontains', label='Fabricante')
     ativo = django_filters.BooleanFilter(label='Ativo')
 
