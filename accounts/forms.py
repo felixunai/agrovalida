@@ -52,9 +52,4 @@ class RegisterForm(forms.ModelForm):
         user.set_password(self.cleaned_data['password1'])
         if commit:
             user.save()
-            from .models import UserProfile
-            UserProfile.objects.create(
-                user=user,
-                telefone=self.cleaned_data['telefone'],
-            )
         return user

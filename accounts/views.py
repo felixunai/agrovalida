@@ -12,6 +12,9 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            profile = user.profile
+            profile.telefone = form.cleaned_data['telefone']
+            profile.save()
             login(request, user)
             messages.success(request, f'Conta criada com sucesso! Bem-vindo, {user.first_name or user.username}.')
             return redirect('dashboard:index')
