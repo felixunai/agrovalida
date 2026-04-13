@@ -30,9 +30,9 @@
         <form method="post" novalidate>
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label">Defensivo *</label>
+                <label class="form-label">Produto *</label>
                 <select name="defensivo" class="form-select" required>
-                    <option value="">Selecione um defensivo...</option>
+                    <option value="">Selecione um produto...</option>
                     {% for d in defensivos %}
                     <option value="{{ d.pk }}">{{ d.nome_comercial }}{% if d.principio_ativo %} - {{ d.principio_ativo }}{% endif %}</option>
                     {% endfor %}

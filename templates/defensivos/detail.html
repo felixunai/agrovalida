@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2 class="mb-4">
-    <a href="{% url 'defensivos:list' %}" class="text-decoration-none text-dark">Defensivos</a>
+    <a href="{% url 'defensivos:list' %}" class="text-decoration-none text-dark">Produtos</a>
     / {{ object.nome_comercial }}
 </h2>
 
@@ -33,7 +33,7 @@
 </div>
 
 {% if lotes %}
-<h4 class="mt-4">Lotes deste Defensivo</h4>
+<h4 class="mt-4">Lotes deste Produto</h4>
 <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead class="table-dark">

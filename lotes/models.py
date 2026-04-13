@@ -21,7 +21,7 @@ class UnidadeMedida(models.TextChoices):
 class Lote(models.Model):
     defensivo = models.ForeignKey(
         'defensivos.Defensivo', on_delete=models.PROTECT, related_name='lotes',
-        verbose_name='defensivo',
+        verbose_name='produto',
     )
     numero_lote = models.CharField('número do lote', max_length=100, db_index=True)
     data_fabricacao = models.DateField('data de fabricação')

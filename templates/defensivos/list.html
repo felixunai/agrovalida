@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="mb-4">Defensivos Agrícolas</h2>
+<h2 class="mb-4">Produtos</h2>
 
 <div class="d-flex justify-content-between mb-3">
     <form method="get" class="d-flex gap-2">
@@ -11,7 +11,7 @@
         <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
         <a href="{% url 'defensivos:list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
     </form>
-    <a href="{% url 'defensivos:create' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Novo Defensivo</a>
+    <a href="{% url 'defensivos:create' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Novo Produto</a>
 </div>
 
 <div class="table-responsive">
@@ -42,7 +42,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="text-center">Nenhum defensivo cadastrado.</td></tr>
+            <tr><td colspan="7" class="text-center">Nenhum produto cadastrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

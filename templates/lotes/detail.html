@@ -19,7 +19,7 @@
             </div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
-                    <tr><th width="200">Defensivo</th><td><a href="{{ object.defensivo.get_absolute_url }}">{{ object.defensivo.nome_comercial }}</a></td></tr>
+                    <tr><th width="200">Produto</th><td><a href="{{ object.defensivo.get_absolute_url }}">{{ object.defensivo.nome_comercial }}</a></td></tr>
                     <tr><th>Nº do Lote</th><td>{{ object.numero_lote }}</td></tr>
                     <tr><th>Data de Fabricação</th><td>{{ object.data_fabricacao|date:"d/m/Y" }}</td></tr>
                     <tr><th>Data de Validade</th><td>{{ object.data_validade|date:"d/m/Y" }}</td></tr>

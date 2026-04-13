@@ -11,7 +11,7 @@ class LoteFilter(django_filters.FilterSet):
     )
 
     defensivo__nome_comercial = django_filters.CharFilter(
-        lookup_expr='icontains', label='Nome do defensivo'
+        lookup_expr='icontains', label='Nome do produto'
     )
     numero_lote = django_filters.CharFilter(lookup_expr='icontains', label='Nº do lote')
     fornecedor = django_filters.CharFilter(lookup_expr='icontains')

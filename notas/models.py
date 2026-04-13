@@ -54,7 +54,7 @@ class ItemNotaFiscal(models.Model):
     data_validade = models.DateField('data de validade', null=True, blank=True)
     defensivo = models.ForeignKey(
         'defensivos.Defensivo', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='itens_nota', verbose_name='defensivo cadastrado',
+        related_name='itens_nota', verbose_name='produto cadastrado',
     )
     lote = models.ForeignKey(
         'lotes.Lote', on_delete=models.SET_NULL, null=True, blank=True,

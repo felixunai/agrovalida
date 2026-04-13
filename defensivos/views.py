@@ -19,11 +19,11 @@ def defensivo_create(request):
         form = DefensivoForm(request.POST)
         if form.is_valid():
             obj = form.save()
-            messages.success(request, f'Defensivo "{obj.nome_comercial}" cadastrado com sucesso.')
+            messages.success(request, f'Produto "{obj.nome_comercial}" cadastrado com sucesso.')
             return redirect(obj)
     else:
         form = DefensivoForm()
-    return render(request, 'defensivos/form.html', {'form': form, 'titulo': 'Novo Defensivo'})
+    return render(request, 'defensivos/form.html', {'form': form, 'titulo': 'Novo Produto'})
 
 
 @login_required
@@ -33,11 +33,11 @@ def defensivo_update(request, pk):
         form = DefensivoForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Defensivo "{obj.nome_comercial}" atualizado com sucesso.')
+            messages.success(request, f'Produto "{obj.nome_comercial}" atualizado com sucesso.')
             return redirect(obj)
     else:
         form = DefensivoForm(instance=obj)
-    return render(request, 'defensivos/form.html', {'form': form, 'titulo': 'Editar Defensivo'})
+    return render(request, 'defensivos/form.html', {'form': form, 'titulo': 'Editar Produto'})
 
 
 @login_required
@@ -54,6 +54,6 @@ def defensivo_delete(request, pk):
     if request.method == 'POST':
         obj.ativo = False
         obj.save()
-        messages.success(request, f'Defensivo "{obj.nome_comercial}" desativado.')
+        messages.success(request, f'Produto "{obj.nome_comercial}" desativado.')
         return redirect('defensivos:list')
     return render(request, 'defensivos/confirm_delete.html', {'object': obj})

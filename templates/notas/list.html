@@ -34,7 +34,7 @@
                 <td>{{ obj.criado_em|date:"d/m/Y H:i" }}</td>
                 <td>
                     <a href="{% url 'notas:detail' obj.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                    <form method="post" action="{% url 'notas:apagar' obj.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta nota e todos os defensivos/lotes criados a partir dela?')">
+                    <form method="post" action="{% url 'notas:apagar' obj.pk %}" class="d-inline" onsubmit="return confirm('Excluir esta nota e todos os produtos/lotes criados a partir dela?')">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                     </form>

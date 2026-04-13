@@ -38,8 +38,8 @@ class Defensivo(models.Model):
 
     class Meta:
         ordering = ['nome_comercial']
-        verbose_name = 'defensivo'
-        verbose_name_plural = 'defensivos'
+        verbose_name = 'produto'
+        verbose_name_plural = 'produtos'
 
     def __str__(self):
         return self.nome_comercial
