@@ -10,6 +10,7 @@ class ClasseDefensivo(models.TextChoices):
     ADJUVANTE = 'adjuvante', 'Adjuvante'
     REGULADOR = 'regulador', 'Regulador de Crescimento'
     BIOLOGICO = 'biologico', 'Biológico'
+    SEMENTE = 'semente', 'Semente'
     OUTRO = 'outro', 'Outro'
 
 

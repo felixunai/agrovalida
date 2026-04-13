@@ -12,6 +12,9 @@
         <table class="table table-borderless mb-0">
             <tr><th width="200">Descrição</th><td>{{ item.descricao }}</td></tr>
             <tr><th>Código Produto</th><td>{{ item.codigo_produto|default:"-" }}</td></tr>
+            <tr><th>Nº Lote (NF-e)</th><td>{{ item.numero_lote|default:"-" }}</td></tr>
+            <tr><th>Data Fabricação (NF-e)</th><td>{% if item.data_fabricacao %}{{ item.data_fabricacao|date:"d/m/Y" }}{% else %}-{% endif %}</td></tr>
+            <tr><th>Data Validade (NF-e)</th><td>{% if item.data_validade %}{{ item.data_validade|date:"d/m/Y" }}{% else %}-{% endif %}</td></tr>
             <tr><th>NCM</th><td>{{ item.ncm|default:"-" }}</td></tr>
             <tr><th>Quantidade</th><td>{{ item.quantidade }} {{ item.unidade|default:"" }}</td></tr>
             <tr><th>Valor Unitário</th><td>{{ item.valor_unitario|default:"-" }}</td></tr>
@@ -38,15 +41,15 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Nº do Lote</label>
-                    <input type="text" name="numero_lote" class="form-control" value="{{ item.descricao|truncatechars:50 }}">
+                    <input type="text" name="numero_lote" class="form-control" value="{{ numero_lote_default }}">
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Data de Fabricação</label>
-                    <input type="date" name="data_fabricacao" class="form-control">
+                    <input type="date" name="data_fabricacao" class="form-control" value="{{ data_fabricacao_default }}">
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Data de Validade *</label>
-                    <input type="date" name="data_validade" class="form-control" required>
+                    <input type="date" name="data_validade" class="form-control" required value="{{ data_validade_default }}">
                 </div>
             </div>
             <div class="row">
@@ -57,10 +60,12 @@
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Unidade</label>
                     <select name="unidade" class="form-select">
-                        <option value="L" {% if item.unidade == 'L' %}selected{% endif %}>Litro</option>
+                        <option value="L">Litro</option>
                         <option value="mL">Mililitro</option>
                         <option value="kg">Quilograma</option>
                         <option value="g">Grama</option>
+                        <option value="BAG">Bag</option>
+                        <option value="un">Unidade</option>
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">

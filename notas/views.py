@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import NotaFiscal, ItemNotaFiscal
 from .forms import NotaFiscalUploadForm
-from .services import processar_nota
+from .services import processar_nota, importar_nota_automatico
 from defensivos.models import Defensivo
 from lotes.models import Lote
 
@@ -18,7 +18,8 @@ def nota_upload(request):
             nota.save()
             try:
                 processar_nota(nota)
-                messages.success(request, f'Nota {nota.numero or ""} processada com sucesso.')
+                importar_nota_automatico(nota, user=request.user)
+                messages.success(request, f'Nota {nota.numero or ""} processada e importada com sucesso.')
             except Exception as e:
                 messages.warning(request, f'Nota salva, mas houve erro no processamento: {e}')
             return redirect('notas:detail', pk=nota.pk)
@@ -30,7 +31,7 @@ def nota_upload(request):
 @login_required
 def nota_detail(request, pk):
     nota = get_object_or_404(NotaFiscal, pk=pk)
-    itens = nota.itens.all()
+    itens = nota.itens.select_related('defensivo', 'lote').all()
     return render(request, 'notas/detail.html', {'nota': nota, 'itens': itens})
 
 
@@ -38,6 +39,21 @@ def nota_detail(request, pk):
 def nota_list(request):
     notas = NotaFiscal.objects.all()
     return render(request, 'notas/list.html', {'object_list': notas})
+
+
+@login_required
+def nota_importar(request, pk):
+    nota = get_object_or_404(NotaFiscal, pk=pk)
+    if nota.status_importacao == 'importado':
+        messages.info(request, 'Esta nota já foi importada.')
+        return redirect('notas:detail', pk=nota.pk)
+
+    defensivos_criados, lotes_criados = importar_nota_automatico(nota, user=request.user)
+    messages.success(
+        request,
+        f'Importação concluída: {defensivos_criados} defensivo(s) e {lotes_criados} lote(s) criados.'
+    )
+    return redirect('notas:detail', pk=nota.pk)
 
 
 @login_required
@@ -59,10 +75,20 @@ def importar_item_lote(request, item_pk):
             local_armazenamento=request.POST.get('local_armazenamento', ''),
             cadastrado_por=request.user,
         )
-        item.lote_importado = True
+        item.defensivo = defensivo
+        item.lote = lote
         item.save()
         messages.success(request, f'Lote "{lote.numero_lote}" importado com sucesso.')
         return redirect('lotes:detail', pk=lote.pk)
 
     defensivos = Defensivo.objects.filter(ativo=True)
-    return render(request, 'notas/importar_item.html', {'item': item, 'defensivos': defensivos})
+    return render(request, 'notas/importar_item.html', {
+        'item': item,
+        'defensivos': defensivos,
+        'numero_lote_default': item.numero_lote or item.descricao[:100],
+        'data_fabricacao_default': item.data_fabricacao.isoformat() if item.data_fabricacao else '',
+        'data_validade_default': item.data_validade.isoformat() if item.data_validade else '',
+        'quantidade_default': item.quantidade,
+        'unidade_default': item.unidade or 'L',
+        'fornecedor_default': item.nota.fornecedor or '',
+    })

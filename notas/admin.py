@@ -5,7 +5,7 @@ from .models import NotaFiscal, ItemNotaFiscal
 class ItemNotaFiscalInline(admin.TabularInline):
     model = ItemNotaFiscal
     extra = 0
-    readonly_fields = ('descricao', 'codigo_produto', 'ncm', 'quantidade', 'unidade')
+    readonly_fields = ('descricao', 'codigo_produto', 'ncm', 'quantidade', 'unidade', 'numero_lote', 'data_fabricacao', 'data_validade')
 
 
 @admin.register(NotaFiscal)

@@ -11,7 +11,17 @@
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-3">
-            <div class="card-header"><h5 class="mb-0">Dados da Nota</h5></div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Dados da Nota</h5>
+                {% if nota.status_importacao == 'pendente' %}
+                <span class="badge bg-secondary">Pendente</span>
+                {% elif nota.status_importacao == 'processado' %}
+                <span class="badge bg-warning text-dark">Processado</span>
+                <a href="{% url 'notas:importar' nota.pk %}" class="btn btn-sm btn-success ms-2"><i class="bi bi-box-arrow-in-down"></i> Importar Tudo</a>
+                {% elif nota.status_importacao == 'importado' %}
+                <span class="badge bg-success">Importado</span>
+                {% endif %}
+            </div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr><th width="150">Número</th><td>{{ nota.numero|default:"-" }}</td></tr>
@@ -19,7 +29,6 @@
                     <tr><th>CNPJ</th><td>{{ nota.cnpj_fornecedor|default:"-" }}</td></tr>
                     <tr><th>Data Emissão</th><td>{{ nota.data_emissao|date:"d/m/Y"|default:"-" }}</td></tr>
                     <tr><th>Tipo</th><td>{{ nota.get_tipo_display }}</td></tr>
-                    <tr><th>Processado</th><td>{% if nota.processado %}Sim{% else %}Não{% endif %}</td></tr>
                 </table>
             </div>
         </div>
@@ -44,30 +53,44 @@
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
-                <th>Código</th>
                 <th>Descrição</th>
-                <th>NCM</th>
+                <th>Código</th>
                 <th>Qtd.</th>
                 <th>Un.</th>
-                <th>Valor Unit.</th>
                 <th>Valor Total</th>
-                <th>Importado</th>
+                <th>Nº Lote</th>
+                <th>Validade</th>
+                <th>Defensivo</th>
+                <th>Lote</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for item in itens %}
-            <tr>
-                <td>{{ item.codigo_produto|default:"-" }}</td>
+            <tr class="{% if item.lote %}table-success{% endif %}">
                 <td>{{ item.descricao }}</td>
-                <td>{{ item.ncm|default:"-" }}</td>
+                <td>{{ item.codigo_produto|default:"-" }}</td>
                 <td>{{ item.quantidade }}</td>
                 <td>{{ item.unidade|default:"-" }}</td>
-                <td>{{ item.valor_unitario|default:"-" }}</td>
-                <td>{{ item.valor_total|default:"-" }}</td>
-                <td>{% if item.lote_importado %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-x-circle text-muted"></i>{% endif %}</td>
+                <td>{% if item.valor_total %}R$ {{ item.valor_total }}{% else %}-{% endif %}</td>
+                <td>{{ item.numero_lote|default:"-" }}</td>
+                <td>{% if item.data_validade %}{{ item.data_validade|date:"d/m/Y" }}{% else %}-{% endif %}</td>
                 <td>
-                    {% if not item.lote_importado %}
+                    {% if item.defensivo %}
+                    <a href="{{ item.defensivo.get_absolute_url }}">{{ item.defensivo.nome_comercial }}</a>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.lote %}
+                    <a href="{{ item.lote.get_absolute_url }}">{{ item.lote.numero_lote }}</a>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not item.defensivo %}
                     <a href="{% url 'notas:importar_item' item.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-box-arrow-in-right"></i> Importar</a>
                     {% endif %}
                 </td>

@@ -14,6 +14,8 @@ class UnidadeMedida(models.TextChoices):
     MILILITRO = 'mL', 'Mililitro'
     QUILOGRAMA = 'kg', 'Quilograma'
     GRAMA = 'g', 'Grama'
+    BAG = 'BAG', 'Bag'
+    UNIDADE = 'un', 'Unidade'
 
 
 class Lote(models.Model):
@@ -26,7 +28,7 @@ class Lote(models.Model):
     data_validade = models.DateField('data de validade', db_index=True)
     quantidade = models.DecimalField('quantidade', max_digits=12, decimal_places=3)
     unidade = models.CharField(
-        'unidade', max_length=2, choices=UnidadeMedida.choices, default=UnidadeMedida.LITRO
+        'unidade', max_length=3, choices=UnidadeMedida.choices, default=UnidadeMedida.LITRO
     )
     fornecedor = models.CharField('fornecedor', max_length=200, blank=True)
     nota_fiscal = models.CharField('nota fiscal', max_length=100, blank=True, db_index=True)
