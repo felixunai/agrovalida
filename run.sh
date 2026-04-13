@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-python setup.py
-exec gunicorn agrovalida.wsgi --bind 0.0.0.0:${PORT:-8000}
