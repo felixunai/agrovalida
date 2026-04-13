@@ -65,16 +65,12 @@ WSGI_APPLICATION = 'agrovalida.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DATABASE_NAME', default='agrovalida'),
-        'USER': env('DATABASE_USER', default='postgres'),
-        'PASSWORD': env('DATABASE_PASSWORD', default='postgres'),
-        'HOST': env('DATABASE_HOST', default='localhost'),
-        'PORT': env('DATABASE_PORT', default='5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-_database_url = os.environ.get('DATABASE_URL', '')
+_database_url = os.environ.get('DATABASE_URL', '') or os.environ.get('DATABASE_PRIVATE_URL', '')
 if _database_url:
     import dj_database_url
     DATABASES['default'] = dj_database_url.parse(_database_url, conn_max_age=600)
