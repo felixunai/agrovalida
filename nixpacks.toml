@@ -1,0 +1,12 @@
+[phases.setup]
+
+nixPkgs = ['...', 'python311']
+
+[phases.build]
+cmds = ['pip install -r requirements.txt', 'python manage.py collectstatic --noinput']
+
+[phases.release]
+cmds = ['python manage.py migrate --noinput', 'python manage.py createadmin']
+
+[start]
+cmd = 'gunicorn agrovalida.wsgi --log-file -'
