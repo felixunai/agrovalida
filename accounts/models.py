@@ -17,12 +17,23 @@ class Plano(models.Model):
         return f'{self.nome} - R$ {self.preco:.2f}/mês'
 
 
+PERIODO_CHOICES = [
+    ('mensal', 'Mensal — R$ 399/mês'),
+    ('anual', 'Anual — R$ 4.000/ano'),
+]
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     telefone = models.CharField('telefone', max_length=20, blank=True)
     plano = models.ForeignKey(Plano, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='plano')
     plano_ativo = models.BooleanField('plano ativo', default=False)
     ativo = models.BooleanField('ativo', default=True)
+    # Stripe
+    stripe_customer_id = models.CharField('Stripe customer ID', max_length=100, blank=True)
+    stripe_subscription_id = models.CharField('Stripe subscription ID', max_length=100, blank=True)
+    periodo_plano = models.CharField('período', max_length=10, choices=PERIODO_CHOICES, blank=True)
+    data_fim_plano = models.DateField('plano válido até', null=True, blank=True)
 
     class Meta:
         verbose_name = 'perfil'

@@ -25,6 +25,22 @@ class LoteFilter(django_filters.FilterSet):
         field_name='data_validade', lookup_expr='lte', label='Validade até'
     )
 
+    fazenda = django_filters.ModelChoiceFilter(
+        queryset=None, label='Fazenda',
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.request if hasattr(self, 'request') else None
+        if request and hasattr(request, 'user'):
+            from fazendas.models import Fazenda
+            self.filters['fazenda'].queryset = Fazenda.objects.filter(
+                cadastrado_por=request.user
+            )
+        else:
+            from fazendas.models import Fazenda
+            self.filters['fazenda'].queryset = Fazenda.objects.none()
+
     class Meta:
         model = Lote
         fields = []

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'notas',
     'accounts',
     'dashboard',
+    'fazendas',
 ]
 
 MIDDLEWARE = [
@@ -99,3 +100,10 @@ LOGIN_REDIRECT_URL = '/painel/'
 LOGOUT_REDIRECT_URL = '/'
 
 ALERTA_DIAS_VENCIMENTO = 90
+
+# Stripe
+STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY', default='')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
+STRIPE_PRICE_MENSAL = env('STRIPE_PRICE_MENSAL', default='')
+STRIPE_PRICE_ANUAL = env('STRIPE_PRICE_ANUAL', default='')

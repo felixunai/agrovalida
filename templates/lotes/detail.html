@@ -49,6 +49,12 @@
                         </td>
                     </tr>
                     <tr><th>Quantidade</th><td>{{ object.quantidade }} {{ object.get_unidade_display }}</td></tr>
+                    {% if object.fazenda %}
+                    <tr>
+                        <th>Fazenda</th>
+                        <td><a href="{{ object.fazenda.get_absolute_url }}">{{ object.fazenda }}</a></td>
+                    </tr>
+                    {% endif %}
                     <tr><th>Fornecedor</th><td>{{ object.fornecedor|default:"—" }}</td></tr>
                     <tr><th>Nota Fiscal</th><td>{{ object.nota_fiscal|default:"—" }}</td></tr>
                     <tr><th>Local de Armazenamento</th><td>{{ object.local_armazenamento|default:"—" }}</td></tr>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Assinatura Confirmada - AgroValida{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        </div>
+        <h2 class="mb-3">Assinatura confirmada!</h2>
+        <p class="lead text-muted mb-4">
+            Obrigado pela sua assinatura do plano Profissional. Seu acesso foi ativado e você já pode usar todos os recursos ilimitados do AgroValida.
+        </p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'dashboard:index' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-speedometer2"></i> Ir para o Painel
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

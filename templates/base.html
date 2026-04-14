@@ -53,6 +53,12 @@
                         <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'fazendas' %}active{% endif %}"
+                       href="{% url 'fazendas:list' %}">
+                        <i class="bi bi-geo-alt"></i> Fazendas
+                    </a>
+                </li>
                 {% if user.is_superuser %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'usuarios' %}active{% endif %}"
@@ -65,8 +71,8 @@
 
             <ul class="navbar-nav align-items-center gap-2 mt-2 mt-lg-0">
                 {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <span class="nav-user-name">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle nav-user-name" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i>
                         {{ user.first_name|default:user.username }}
                         {% if user.is_superuser %}
@@ -76,15 +82,24 @@
                         {% else %}
                             <span class="plan-chip">Grátis</span>
                         {% endif %}
-                    </span>
-                </li>
-                <li class="nav-item">
-                    <form method="post" action="{% url 'logout' %}" class="d-inline m-0">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-sair">
-                            <i class="bi bi-box-arrow-right"></i> Sair
-                        </button>
-                    </form>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'accounts:perfil' %}"><i class="bi bi-person-gear"></i> Meu Perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:alterar_senha' %}"><i class="bi bi-key"></i> Alterar Senha</a></li>
+                        {% if not request.is_pro and not user.is_superuser %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-primary" href="{% url 'accounts:upgrade' %}"><i class="bi bi-rocket-takeoff"></i> Atualizar Plano</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </li>
                 {% else %}
                 <li class="nav-item">

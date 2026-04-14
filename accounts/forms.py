@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
 
 
 class RegisterForm(forms.ModelForm):
@@ -53,3 +54,34 @@ class RegisterForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class PerfilForm(forms.ModelForm):
+    telefone = forms.CharField(
+        label='Telefone', max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(00) 00000-0000'}),
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        labels = {'first_name': 'Nome', 'last_name': 'Sobrenome', 'email': 'E-mail'}
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        qs = User.objects.filter(email=email).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('Este e-mail já está em uso.')
+        return email
+
+
+class PasswordChangeForm(DjangoPasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'

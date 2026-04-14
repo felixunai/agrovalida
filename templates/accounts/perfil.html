@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Meu Perfil - AgroValida{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2><i class="bi bi-person-gear"></i> Meu Perfil</h2>
+            {% if is_pro %}
+                <span class="badge bg-primary fs-6"><i class="bi bi-star-fill"></i> Plano Profissional</span>
+            {% else %}
+                <a href="{% url 'accounts:upgrade' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-rocket-takeoff"></i> Atualizar para Pro
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Dados da Conta</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Salvar</button>
+                        <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Segurança</strong></div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Troque sua senha periodicamente para manter sua conta segura.</p>
+                <a href="{% url 'accounts:alterar_senha' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-key"></i> Alterar Senha
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

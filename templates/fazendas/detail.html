@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object.nome }} - AgroValida{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-geo-alt"></i>
+            <a href="{% url 'fazendas:list' %}" class="text-decoration-none text-dark">Fazendas</a>
+            / {{ object.nome }}
+        </h2>
+        {% if object.cidade or object.estado %}
+        <div class="breadcrumb-text">
+            <i class="bi bi-pin-map"></i>
+            {{ object.cidade }}{% if object.cidade and object.estado %}, {% endif %}{{ object.get_estado_display }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'fazendas:update' object.pk %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{% url 'fazendas:delete' object.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+    </div>
+</div>
+
+{% if object.descricao %}
+<p class="text-muted mb-4">{{ object.descricao }}</p>
+{% endif %}
+
+<h5>Lotes nesta Fazenda</h5>
+{% if lotes %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nº Lote</th>
+                    <th>Produto</th>
+                    <th>Validade</th>
+                    <th>Dias</th>
+                    <th>Status</th>
+                    <th>Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lote in lotes %}
+                <tr class="{% if lote.status_vencimento == 'vencido' %}table-danger{% elif lote.status_vencimento == 'vencendo' %}table-warning{% endif %}">
+                    <td><a href="{{ lote.get_absolute_url }}">{{ lote.numero_lote }}</a></td>
+                    <td>{{ lote.defensivo.nome_comercial }}</td>
+                    <td>{{ lote.data_validade|date:"d/m/Y" }}</td>
+                    <td><strong>{{ lote.dias_para_vencer }}</strong></td>
+                    <td>
+                        {% if lote.status_vencimento == 'vencido' %}
+                            <span class="badge badge-vencido">Vencido</span>
+                        {% elif lote.status_vencimento == 'vencendo' %}
+                            <span class="badge badge-vencendo">Vencendo</span>
+                        {% else %}
+                            <span class="badge badge-vigente">Vigente</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ lote.quantidade }} {{ lote.get_unidade_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-muted">
+    <i class="bi bi-inbox"></i> Nenhum lote associado a esta fazenda ainda.
+    <a href="{% url 'lotes:create' %}">Cadastrar lote</a>
+</div>
+{% endif %}
+{% endblock %}

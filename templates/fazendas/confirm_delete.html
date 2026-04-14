@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Excluir Fazenda</h2>
+
+<div class="alert alert-warning">
+    <p>Tem certeza que deseja excluir a fazenda <strong>{{ object.nome }}</strong>?</p>
+    <p class="mb-0">Os lotes associados <strong>não serão excluídos</strong> — apenas o vínculo com esta fazenda será removido.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Excluir</button>
+    <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -13,7 +13,7 @@ LOTES_PER_PAGE = 25
 @login_required
 def lote_list(request):
     queryset = Lote.objects.filter(cadastrado_por=request.user).select_related('defensivo')
-    filtro = LoteFilter(request.GET, queryset=queryset)
+    filtro = LoteFilter(request.GET, queryset=queryset, request=request)
 
     paginator = Paginator(filtro.qs, LOTES_PER_PAGE)
     page_obj = paginator.get_page(request.GET.get('page'))

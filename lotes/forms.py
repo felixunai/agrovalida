@@ -7,14 +7,18 @@ class LoteForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user is not None:
             from defensivos.models import Defensivo
+            from fazendas.models import Fazenda
             self.fields['defensivo'].queryset = Defensivo.objects.filter(
                 cadastrado_por=user, ativo=True
             ).order_by('nome_comercial')
+            self.fields['fazenda'].queryset = Fazenda.objects.filter(
+                cadastrado_por=user
+            ).order_by('nome')
 
     class Meta:
         model = Lote
         fields = [
-            'defensivo', 'numero_lote', 'data_fabricacao', 'data_validade',
+            'defensivo', 'fazenda', 'numero_lote', 'data_fabricacao', 'data_validade',
             'quantidade', 'unidade', 'fornecedor', 'nota_fiscal',
             'local_armazenamento', 'observacoes',
         ]
@@ -28,6 +32,7 @@ class LoteForm(forms.ModelForm):
             'fornecedor': forms.TextInput(attrs={'class': 'form-control'}),
             'nota_fiscal': forms.TextInput(attrs={'class': 'form-control'}),
             'local_armazenamento': forms.TextInput(attrs={'class': 'form-control'}),
+            'fazenda': forms.Select(attrs={'class': 'form-select'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 

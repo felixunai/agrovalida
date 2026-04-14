@@ -21,6 +21,21 @@ PLANO_PRO_LIMITS = {
 }
 
 
+def _has_active_subscription(profile):
+    """True if the user has a paid plan that is currently valid."""
+    from django.utils import timezone
+    hoje = timezone.now().date()
+    # Manual activation by admin
+    if profile.plano_ativo and profile.plano and profile.plano.nome == 'Profissional':
+        # If there's a data_fim_plano, respect it; otherwise trust plano_ativo
+        if profile.data_fim_plano is None or profile.data_fim_plano >= hoje:
+            return True
+    # Stripe-activated subscription
+    if profile.stripe_subscription_id and profile.data_fim_plano and profile.data_fim_plano >= hoje:
+        return True
+    return False
+
+
 def get_plan_limits(user):
     if not user.is_authenticated:
         return PLANO_GRATUITO_LIMITS
@@ -28,7 +43,7 @@ def get_plan_limits(user):
         profile = user.profile
         if user.is_superuser:
             return PLANO_PRO_LIMITS
-        if profile.plano_ativo and profile.plano and profile.plano.nome == 'Profissional':
+        if _has_active_subscription(profile):
             return PLANO_PRO_LIMITS
     except UserProfile.DoesNotExist:
         pass
@@ -41,8 +56,7 @@ def is_pro_user(user):
     if user.is_superuser:
         return True
     try:
-        profile = user.profile
-        return profile.plano_ativo and profile.plano and profile.plano.nome == 'Profissional'
+        return _has_active_subscription(user.profile)
     except UserProfile.DoesNotExist:
         return False
 

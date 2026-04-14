@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'notas',
     'accounts',
     'dashboard',
+    'fazendas',
 ]
 
 MIDDLEWARE = [
@@ -115,3 +116,10 @@ LOGOUT_REDIRECT_URL = '/'
 ALERTA_DIAS_VENCIMENTO = 90
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Stripe
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+STRIPE_PRICE_MENSAL = os.environ.get('STRIPE_PRICE_MENSAL', '')
+STRIPE_PRICE_ANUAL = os.environ.get('STRIPE_PRICE_ANUAL', '')

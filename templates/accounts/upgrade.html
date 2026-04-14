@@ -18,13 +18,14 @@
         </div>
         {% else %}
         <div class="row g-4 justify-content-center">
-            <div class="col-md-5">
+            <!-- Plano Gratuito -->
+            <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-header bg-success text-white text-center">
                         <h4 class="mb-0">Gratuito</h4>
                     </div>
                     <div class="card-body text-center">
-                        <h2>R$ 0<small class="text-muted">/mês</small></h2>
+                        <h2 class="my-3">R$ 0<small class="text-muted fs-6">/mês</small></h2>
                         <hr>
                         <ul class="list-unstyled text-start">
                             <li class="mb-2"><i class="bi bi-check text-success"></i> Até {{ limits.max_defensivos }} produtos</li>
@@ -33,17 +34,20 @@
                             <li class="mb-2"><i class="bi bi-x text-danger"></i> Relatórios avançados</li>
                             <li class="mb-2"><i class="bi bi-x text-danger"></i> Importação ilimitada</li>
                         </ul>
-                        <button class="btn btn-outline-success btn-lg w-100" disabled>Plano Atual</button>
+                        <button class="btn btn-outline-success btn-lg w-100 mt-2" disabled>Plano Atual</button>
                     </div>
                 </div>
             </div>
-            <div class="col-md-5">
+
+            <!-- Plano Mensal -->
+            <div class="col-md-4">
                 <div class="card h-100 border-primary">
                     <div class="card-header bg-primary text-white text-center">
-                        <h4 class="mb-0"><i class="bi bi-star"></i> Profissional</h4>
+                        <h4 class="mb-0"><i class="bi bi-star"></i> Profissional Mensal</h4>
                     </div>
                     <div class="card-body text-center">
-                        <h2>R$ 500<small class="text-muted">/mês</small></h2>
+                        <h2 class="my-3">R$ 399<small class="text-muted fs-6">/mês</small></h2>
+                        <p class="text-muted small">Cancele quando quiser</p>
                         <hr>
                         <ul class="list-unstyled text-start">
                             <li class="mb-2"><i class="bi bi-check text-success"></i> Produtos ilimitados</li>
@@ -53,16 +57,56 @@
                             <li class="mb-2"><i class="bi bi-check text-success"></i> Importação ilimitada</li>
                             <li class="mb-2"><i class="bi bi-check text-success"></i> Suporte prioritário</li>
                         </ul>
-                        <a href="mailto:contato@agrovalida.com.br?subject=Atualizar para Plano Profissional" class="btn btn-primary btn-lg w-100">
-                            <i class="bi bi-rocket-takeoff"></i> Atualizar Agora
+                        {% if stripe_public_key %}
+                        <a href="{% url 'accounts:assinar' %}?periodo=mensal" class="btn btn-primary btn-lg w-100 mt-2">
+                            <i class="bi bi-credit-card"></i> Assinar por R$ 399/mês
                         </a>
+                        {% else %}
+                        <a href="mailto:contato@agrovalida.com.br?subject=Plano Profissional Mensal" class="btn btn-primary btn-lg w-100 mt-2">
+                            <i class="bi bi-envelope"></i> Entrar em Contato
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plano Anual -->
+            <div class="col-md-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-warning text-dark text-center position-relative">
+                        <span class="badge bg-danger position-absolute top-0 end-0 mt-1 me-1">-16%</span>
+                        <h4 class="mb-0"><i class="bi bi-star-fill"></i> Profissional Anual</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 class="my-3">R$ 4.000<small class="text-muted fs-6">/ano</small></h2>
+                        <p class="text-muted small">Equivale a R$ 333/mês — economize R$ 788</p>
+                        <hr>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Produtos ilimitados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Lotes ilimitados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Notas fiscais ilimitadas</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Relatórios avançados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Importação ilimitada</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Suporte prioritário</li>
+                        </ul>
+                        {% if stripe_public_key %}
+                        <a href="{% url 'accounts:assinar' %}?periodo=anual" class="btn btn-warning btn-lg w-100 mt-2 text-dark">
+                            <i class="bi bi-credit-card"></i> Assinar por R$ 4.000/ano
+                        </a>
+                        {% else %}
+                        <a href="mailto:contato@agrovalida.com.br?subject=Plano Profissional Anual" class="btn btn-warning btn-lg w-100 mt-2 text-dark">
+                            <i class="bi bi-envelope"></i> Entrar em Contato
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="text-center mt-4">
-            <p class="text-muted">Entre em contato com o administrador para ativar o plano Profissional.</p>
+            <p class="text-muted small">
+                <i class="bi bi-shield-lock"></i> Pagamento seguro via Stripe. Seus dados financeiros nunca passam pelos nossos servidores.
+            </p>
         </div>
         {% endif %}
     </div>

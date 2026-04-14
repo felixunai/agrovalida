@@ -119,8 +119,22 @@
         </tbody>
     </table>
 </div>
-<div class="mb-3">
-    <button type="submit" class="btn btn-success"><i class="bi bi-box-arrow-in-down"></i> Importar Todos</button>
+<div class="row align-items-end mb-3 g-2">
+    <div class="col-md-4">
+        <label class="form-label mb-1">
+            <i class="bi bi-geo-alt"></i> Fazenda de Destino
+            <span class="text-muted small">(opcional)</span>
+        </label>
+        <select name="fazenda_id" class="form-select form-select-sm">
+            <option value="">— Sem fazenda específica —</option>
+            {% for f in fazendas %}
+            <option value="{{ f.pk }}">{{ f }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-success"><i class="bi bi-box-arrow-in-down"></i> Importar Todos</button>
+    </div>
 </div>
 </form>
 {% else %}

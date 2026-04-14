@@ -13,6 +13,7 @@ urlpatterns = [
     path('notas/', include('notas.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('fazendas/', include('fazendas.urls')),
 ]
 
 if settings.DEBUG:

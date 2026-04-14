@@ -100,15 +100,18 @@ def nota_upload(request):
 
 @login_required
 def nota_detail(request, pk):
+    from fazendas.models import Fazenda
     nota = get_object_or_404(NotaFiscal, pk=pk, cadastrado_por=request.user)
     itens = nota.itens.select_related('defensivo', 'lote').all()
     classes = ClasseDefensivo.choices
+    fazendas = Fazenda.objects.filter(cadastrado_por=request.user)
     for item in itens:
         item.classe_sugerida = inferir_classe(item.descricao)
     return render(request, 'notas/detail.html', {
         'nota': nota,
         'itens': itens,
         'classes': classes,
+        'fazendas': fazendas,
     })
 
 
@@ -135,7 +138,18 @@ def nota_importar(request, pk):
             except (ValueError, TypeError):
                 pass
 
-    defensivos_criados, lotes_criados = importar_nota_automatico(nota, user=request.user, classes_por_item=tipos)
+    fazenda = None
+    fazenda_id = request.POST.get('fazenda_id')
+    if fazenda_id:
+        from fazendas.models import Fazenda
+        try:
+            fazenda = Fazenda.objects.get(pk=fazenda_id, cadastrado_por=request.user)
+        except Fazenda.DoesNotExist:
+            pass
+
+    defensivos_criados, lotes_criados = importar_nota_automatico(
+        nota, user=request.user, classes_por_item=tipos, fazenda=fazenda
+    )
     messages.success(
         request,
         f'Importação concluída: {defensivos_criados} produto(s) e {lotes_criados} lote(s) criados.'

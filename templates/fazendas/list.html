@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Fazendas - AgroValida{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-geo-alt"></i> Fazendas e Propriedades</h2>
+        <div class="breadcrumb-text">{{ object_list|length }} fazenda{{ object_list|length|pluralize }} cadastrada{{ object_list|length|pluralize }}</div>
+    </div>
+    <a href="{% url 'fazendas:create' %}" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Nova Fazenda
+    </a>
+</div>
+
+{% if object_list %}
+<div class="row g-3">
+    {% for f in object_list %}
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title mb-1">
+                    <a href="{{ f.get_absolute_url }}" class="text-decoration-none">{{ f.nome }}</a>
+                </h5>
+                {% if f.cidade or f.estado %}
+                <p class="text-muted small mb-1">
+                    <i class="bi bi-pin-map"></i>
+                    {{ f.cidade }}{% if f.cidade and f.estado %}, {% endif %}{{ f.get_estado_display }}
+                </p>
+                {% endif %}
+                {% if f.descricao %}
+                <p class="text-muted small mb-0">{{ f.descricao }}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent d-flex gap-2">
+                <a href="{% url 'fazendas:update' f.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'fazendas:delete' f.pk %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-geo-alt fs-1 d-block mb-3 opacity-25"></i>
+        <h5>Nenhuma fazenda cadastrada</h5>
+        <p class="mb-3">Cadastre suas fazendas e propriedades para organizar seus lotes por localidade.</p>
+        <a href="{% url 'fazendas:create' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Cadastrar Fazenda
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
