@@ -63,9 +63,10 @@ def _filtrar_lotes_relatorio(user, params):
     dias_alerta = getattr(settings, 'ALERTA_DIAS_VENCIMENTO', 90)
     limite_alerta = hoje + timezone.timedelta(days=dias_alerta)
 
-    status    = params.get('status', 'todos')
-    classe    = params.get('classe', '')
-    fornecedor = params.get('fornecedor', '')
+    status             = params.get('status', 'todos')
+    classe             = params.get('classe', '')
+    fornecedor         = params.get('fornecedor', '')
+    local_armazenamento = params.get('local_armazenamento', '')
 
     lotes = Lote.objects.filter(cadastrado_por=user).select_related('defensivo').order_by('data_validade')
 
@@ -80,19 +81,23 @@ def _filtrar_lotes_relatorio(user, params):
         lotes = lotes.filter(defensivo__classe=classe)
     if fornecedor:
         lotes = lotes.filter(fornecedor__icontains=fornecedor)
+    if local_armazenamento:
+        lotes = lotes.filter(local_armazenamento__icontains=local_armazenamento)
 
-    return lotes, status, classe, fornecedor, dias_alerta
+    return lotes, status, classe, fornecedor, local_armazenamento, dias_alerta
 
 
 @login_required
 def relatorio_vencimento(request):
-    lotes, status, classe, fornecedor, dias_alerta = _filtrar_lotes_relatorio(request.user, request.GET)
+    lotes, status, classe, fornecedor, local_armazenamento, dias_alerta = _filtrar_lotes_relatorio(request.user, request.GET)
 
     context = {
         'lotes': lotes,
+        'total_count': lotes.count(),
         'status': status,
         'classe': classe,
         'fornecedor': fornecedor,
+        'local_armazenamento': local_armazenamento,
         'classes': ClasseDefensivo.choices,
         'dias_alerta': dias_alerta,
     }
@@ -102,7 +107,7 @@ def relatorio_vencimento(request):
 @login_required
 def relatorio_vencimento_csv(request):
     """Download the expiry report as a CSV file."""
-    lotes, status, classe, fornecedor, _ = _filtrar_lotes_relatorio(request.user, request.GET)
+    lotes, status, classe, fornecedor, local_armazenamento, _ = _filtrar_lotes_relatorio(request.user, request.GET)
 
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = 'attachment; filename="relatorio_vencimento.csv"'

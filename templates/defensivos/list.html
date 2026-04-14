@@ -18,6 +18,7 @@
         {{ filter.form.nome_comercial }}
         {{ filter.form.classe }}
         {{ filter.form.fabricante }}
+        {{ filter.form.ativo }}
         <button type="submit" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-search"></i> Filtrar
         </button>
@@ -35,33 +36,49 @@
                     <th>Nome Comercial</th>
                     <th>Princípio Ativo</th>
                     <th>Classe</th>
-                    <th>Registro MAPA</th>
+                    <th>Cl. Toxicológica</th>
                     <th>Fabricante</th>
-                    <th>Ativo</th>
+                    <th>Situação</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for obj in object_list %}
-                <tr>
-                    <td><a href="{{ obj.get_absolute_url }}">{{ obj.nome_comercial }}</a></td>
+                <tr {% if not obj.ativo %}class="text-muted" style="opacity:.6;"{% endif %}>
+                    <td>
+                        <a href="{{ obj.get_absolute_url }}" {% if not obj.ativo %}class="text-muted"{% endif %}>
+                            {{ obj.nome_comercial }}
+                        </a>
+                    </td>
                     <td>{{ obj.principio_ativo|default:"—" }}</td>
                     <td>{{ obj.get_classe_display }}</td>
-                    <td>{{ obj.registro_mapa|default:"—" }}</td>
+                    <td>
+                        {% if obj.classe_toxicologica %}
+                            {% if obj.classe_toxicologica == '1' %}
+                                <span class="badge bg-danger">{{ obj.get_classe_toxicologica_display }}</span>
+                            {% elif obj.classe_toxicologica == '2' %}
+                                <span class="badge bg-warning text-dark">{{ obj.get_classe_toxicologica_display }}</span>
+                            {% elif obj.classe_toxicologica == '3' %}
+                                <span class="badge bg-info text-dark">{{ obj.get_classe_toxicologica_display }}</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ obj.get_classe_toxicologica_display }}</span>
+                            {% endif %}
+                        {% else %}—{% endif %}
+                    </td>
                     <td>{{ obj.fabricante|default:"—" }}</td>
                     <td>
                         {% if obj.ativo %}
-                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Ativo</span>
                         {% else %}
-                            <i class="bi bi-x-circle-fill text-danger"></i>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inativo</span>
                         {% endif %}
                     </td>
                     <td>
                         <a href="{% url 'defensivos:update' obj.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="{% url 'defensivos:delete' obj.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
-                            <i class="bi bi-trash"></i>
+                        <a href="{% url 'defensivos:delete' obj.pk %}" class="btn btn-sm btn-outline-secondary" title="{% if obj.ativo %}Desativar{% else %}Reativar{% endif %}">
+                            <i class="bi bi-{% if obj.ativo %}pause-circle{% else %}play-circle{% endif %}"></i>
                         </a>
                     </td>
                 </tr>

@@ -2,27 +2,98 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<h2 class="mb-4">
-    <a href="{% url 'lotes:list' %}" class="text-decoration-none text-dark">Lotes</a>
-    / {{ titulo }}
-</h2>
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-boxes"></i>
+            <a href="{% url 'lotes:list' %}" class="text-decoration-none text-dark">Lotes</a>
+            / {{ titulo }}
+        </h2>
+    </div>
+</div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% for field in form %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% for error in field.errors %}
-                <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.defensivo.id_for_label }}" class="form-label">{{ form.defensivo.label }}</label>
+                        {{ form.defensivo }}
+                        {% for error in form.defensivo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.numero_lote.id_for_label }}" class="form-label">{{ form.numero_lote.label }}</label>
+                            {{ form.numero_lote }}
+                            {% for error in form.numero_lote.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.nota_fiscal.id_for_label }}" class="form-label">{{ form.nota_fiscal.label }}</label>
+                            {{ form.nota_fiscal }}
+                            {% for error in form.nota_fiscal.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.data_fabricacao.id_for_label }}" class="form-label">
+                                {{ form.data_fabricacao.label }}
+                                <span class="text-muted small">(opcional)</span>
+                            </label>
+                            {{ form.data_fabricacao }}
+                            {% for error in form.data_fabricacao.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.data_validade.id_for_label }}" class="form-label">{{ form.data_validade.label }}</label>
+                            {{ form.data_validade }}
+                            {% for error in form.data_validade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.quantidade.id_for_label }}" class="form-label">{{ form.quantidade.label }}</label>
+                            {{ form.quantidade }}
+                            {% for error in form.quantidade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.unidade.id_for_label }}" class="form-label">{{ form.unidade.label }}</label>
+                            {{ form.unidade }}
+                            {% for error in form.unidade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.fornecedor.id_for_label }}" class="form-label">{{ form.fornecedor.label }}</label>
+                            {{ form.fornecedor }}
+                            {% for error in form.fornecedor.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.local_armazenamento.id_for_label }}" class="form-label">{{ form.local_armazenamento.label }}</label>
+                        {{ form.local_armazenamento }}
+                        {% for error in form.local_armazenamento.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.observacoes.id_for_label }}" class="form-label">{{ form.observacoes.label }}</label>
+                        {{ form.observacoes }}
+                        {% for error in form.observacoes.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Salvar</button>
+                        <a href="{% url 'lotes:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
             </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Salvar</button>
-            <a href="{% url 'lotes:list' %}" class="btn btn-outline-secondary">Cancelar</a>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

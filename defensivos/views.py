@@ -73,8 +73,10 @@ def defensivo_detail(request, pk):
 def defensivo_delete(request, pk):
     obj = get_object_or_404(Defensivo, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
-        obj.ativo = False
+        novo_estado = not obj.ativo
+        obj.ativo = novo_estado
         obj.save()
-        messages.success(request, f'Produto "{obj.nome_comercial}" desativado.')
+        acao = 'reativado' if novo_estado else 'desativado'
+        messages.success(request, f'Produto "{obj.nome_comercial}" {acao}.')
         return redirect('defensivos:list')
     return render(request, 'defensivos/confirm_delete.html', {'object': obj})

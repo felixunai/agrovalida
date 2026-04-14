@@ -1,16 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="mb-4">Desativar Produto</h2>
+<h2 class="mb-4">{% if object.ativo %}Desativar{% else %}Reativar{% endif %} Produto</h2>
 
-<div class="alert alert-warning">
-    <p>Tem certeza que deseja desativar o produto <strong>{{ object.nome_comercial }}</strong>?</p>
-    <p class="mb-0">Os lotes associados continuarão existindo.</p>
+<div class="alert alert-{% if object.ativo %}warning{% else %}success{% endif %}">
+    <p>Tem certeza que deseja <strong>{% if object.ativo %}desativar{% else %}reativar{% endif %}</strong> o produto <strong>{{ object.nome_comercial }}</strong>?</p>
+    {% if object.ativo %}
+    <p class="mb-0">Os lotes associados continuarão existindo. O produto não aparecerá mais nas listagens por padrão.</p>
+    {% else %}
+    <p class="mb-0">O produto voltará a aparecer nas listagens e poderá receber novos lotes.</p>
+    {% endif %}
 </div>
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Desativar</button>
+    <button type="submit" class="btn btn-{% if object.ativo %}warning{% else %}success{% endif %}">
+        <i class="bi bi-{% if object.ativo %}pause-circle{% else %}play-circle{% endif %}"></i>
+        {% if object.ativo %}Desativar{% else %}Reativar{% endif %}
+    </button>
     <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">Cancelar</a>
 </form>
 {% endblock %}

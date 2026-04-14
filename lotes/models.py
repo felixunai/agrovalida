@@ -24,7 +24,7 @@ class Lote(models.Model):
         verbose_name='produto',
     )
     numero_lote = models.CharField('número do lote', max_length=100, db_index=True)
-    data_fabricacao = models.DateField('data de fabricação')
+    data_fabricacao = models.DateField('data de fabricação', blank=True, null=True)
     data_validade = models.DateField('data de validade', db_index=True)
     quantidade = models.DecimalField('quantidade', max_digits=12, decimal_places=3)
     unidade = models.CharField(

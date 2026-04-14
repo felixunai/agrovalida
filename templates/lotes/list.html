@@ -17,6 +17,7 @@
     <form method="get">
         {{ filter.form.defensivo__nome_comercial }}
         {{ filter.form.numero_lote }}
+        {{ filter.form.fornecedor }}
         {{ filter.form.status_vencimento }}
         {{ filter.form.data_validade_inicio }}
         {{ filter.form.data_validade_fim }}
@@ -36,6 +37,8 @@
                 <tr>
                     <th>Nº Lote</th>
                     <th>Produto</th>
+                    <th>Classe</th>
+                    <th>Fabricação</th>
                     <th>Validade</th>
                     <th>Dias</th>
                     <th>Status</th>
@@ -49,6 +52,8 @@
                 <tr class="{% if obj.status_vencimento == 'vencido' %}table-danger{% elif obj.status_vencimento == 'vencendo' %}table-warning{% endif %}">
                     <td><a href="{{ obj.get_absolute_url }}">{{ obj.numero_lote }}</a></td>
                     <td>{{ obj.defensivo.nome_comercial }}</td>
+                    <td><span class="text-muted small">{{ obj.defensivo.get_classe_display }}</span></td>
+                    <td>{{ obj.data_fabricacao|date:"d/m/Y"|default:"—" }}</td>
                     <td>{{ obj.data_validade|date:"d/m/Y" }}</td>
                     <td>
                         <strong {% if obj.dias_para_vencer < 0 %}style="color:var(--av-red)"{% elif obj.dias_para_vencer <= 30 %}style="color:var(--av-amber-d)"{% endif %}>
@@ -77,7 +82,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
+                    <td colspan="10" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
                         Nenhum lote encontrado.
                     </td>

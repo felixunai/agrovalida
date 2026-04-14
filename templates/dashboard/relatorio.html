@@ -6,6 +6,9 @@
 <div class="page-header">
     <div>
         <h2><i class="bi bi-file-earmark-bar-graph"></i> Relatório de Vencimento</h2>
+        {% if total_count is not None %}
+        <div class="breadcrumb-text">{{ total_count }} lote{{ total_count|pluralize }} encontrado{{ total_count|pluralize }}</div>
+        {% endif %}
     </div>
     <a href="{% url 'dashboard:relatorio_vencimento_csv' %}?{{ request.GET.urlencode }}"
        class="btn btn-outline-success">
@@ -16,7 +19,7 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="todos" {% if status == 'todos' %}selected{% endif %}>Todos</option>
@@ -25,7 +28,7 @@
                     <option value="vigente" {% if status == 'vigente' %}selected{% endif %}>Vigentes</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Classe</label>
                 <select name="classe" class="form-select">
                     <option value="">Todas</option>
@@ -36,10 +39,14 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label">Fornecedor</label>
-                <input type="text" name="fornecedor" class="form-control" value="{{ fornecedor|default:'' }}">
+                <input type="text" name="fornecedor" class="form-control" value="{{ fornecedor|default:'' }}" placeholder="Buscar fornecedor">
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-primary me-2"><i class="bi bi-search"></i> Filtrar</button>
+                <label class="form-label">Local de Armazenamento</label>
+                <input type="text" name="local_armazenamento" class="form-control" value="{{ local_armazenamento|default:'' }}" placeholder="Buscar local">
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Filtrar</button>
                 <a href="{% url 'dashboard:relatorio_vencimento' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
             </div>
         </form>
@@ -67,10 +74,16 @@
             <tr class="{% if lote.status_vencimento == 'vencido' %}table-danger{% elif lote.status_vencimento == 'vencendo' %}table-warning{% endif %}">
                 <td><a href="{{ lote.get_absolute_url }}">{{ lote.numero_lote }}</a></td>
                 <td>{{ lote.defensivo.nome_comercial }}</td>
-                <td>{{ lote.defensivo.get_classe_display }}</td>
-                <td>{{ lote.data_fabricacao|date:"d/m/Y" }}</td>
+                <td><span class="text-muted small">{{ lote.defensivo.get_classe_display }}</span></td>
+                <td>{{ lote.data_fabricacao|date:"d/m/Y"|default:"—" }}</td>
                 <td>{{ lote.data_validade|date:"d/m/Y" }}</td>
-                <td>{{ lote.dias_para_vencer }}</td>
+                <td>
+                    <strong
+                        {% if lote.dias_para_vencer < 0 %}style="color:var(--av-red)"
+                        {% elif lote.dias_para_vencer <= 30 %}style="color:var(--av-amber-d)"{% endif %}>
+                        {{ lote.dias_para_vencer }}
+                    </strong>
+                </td>
                 <td>
                     {% if lote.status_vencimento == 'vencido' %}
                     <span class="badge badge-vencido">Vencido</span>
@@ -81,11 +94,14 @@
                     {% endif %}
                 </td>
                 <td>{{ lote.quantidade }} {{ lote.get_unidade_display }}</td>
-                <td>{{ lote.fornecedor }}</td>
-                <td>{{ lote.local_armazenamento }}</td>
+                <td>{{ lote.fornecedor|default:"—" }}</td>
+                <td>{{ lote.local_armazenamento|default:"—" }}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="10" class="text-center">Nenhum lote encontrado.</td></tr>
+            <tr><td colspan="10" class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                Nenhum lote encontrado com os filtros aplicados.
+            </td></tr>
             {% endfor %}
         </tbody>
     </table>
