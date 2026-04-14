@@ -9,6 +9,14 @@ class MultipleFileInput(Input):
     needs_multipart_form = True
     allow_multiple_selected = True
 
+    def value_from_datadict(self, data, files, name):
+        # FileField expects a single file object for required-field validation;
+        # clean_arquivo() fetches the full list via self.files.getlist().
+        return files.get(name)
+
+    def value_omitted_from_data(self, data, files, name):
+        return name not in files
+
 
 class NotaFiscalUploadForm(forms.Form):
     """
