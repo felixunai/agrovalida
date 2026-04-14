@@ -152,32 +152,47 @@ def assinar(request):
         messages.error(request, 'Plano não configurado. Entre em contato com o suporte.')
         return redirect('accounts:upgrade')
 
+    if not price_id.startswith('price_'):
+        logger.error('STRIPE_PRICE_%s está com valor inválido: %s (deve começar com price_)', periodo.upper(), price_id)
+        messages.error(request, 'Configuração de preço inválida. Entre em contato com o suporte.')
+        return redirect('accounts:upgrade')
+
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-    # Cria ou recupera customer no Stripe
-    if not profile.stripe_customer_id:
-        customer = stripe.Customer.create(
-            email=request.user.email,
-            name=request.user.get_full_name() or request.user.username,
-            metadata={'user_id': request.user.pk},
+    try:
+        # Cria ou recupera customer no Stripe
+        if not profile.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=request.user.email,
+                name=request.user.get_full_name() or request.user.username,
+                metadata={'user_id': request.user.pk},
+            )
+            profile.stripe_customer_id = customer.id
+            profile.save(update_fields=['stripe_customer_id'])
+
+        success_url = request.build_absolute_uri('/accounts/assinar/sucesso/')
+        cancel_url = request.build_absolute_uri('/accounts/upgrade/')
+
+        session = stripe.checkout.Session.create(
+            customer=profile.stripe_customer_id,
+            payment_method_types=['card'],
+            line_items=[{'price': price_id, 'quantity': 1}],
+            mode='subscription',
+            success_url=success_url + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=cancel_url,
+            metadata={'user_id': request.user.pk, 'periodo': periodo},
+            locale='pt-BR',
         )
-        profile.stripe_customer_id = customer.id
-        profile.save(update_fields=['stripe_customer_id'])
+        return redirect(session.url, permanent=False)
 
-    success_url = request.build_absolute_uri('/accounts/assinar/sucesso/')
-    cancel_url = request.build_absolute_uri('/accounts/upgrade/')
-
-    session = stripe.checkout.Session.create(
-        customer=profile.stripe_customer_id,
-        payment_method_types=['card'],
-        line_items=[{'price': price_id, 'quantity': 1}],
-        mode='subscription',
-        success_url=success_url + '?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url=cancel_url,
-        metadata={'user_id': request.user.pk, 'periodo': periodo},
-        locale='pt-BR',
-    )
-    return redirect(session.url, permanent=False)
+    except stripe.error.InvalidRequestError as e:
+        logger.error('Stripe InvalidRequestError ao criar sessão: %s', e)
+        messages.error(request, 'Erro ao iniciar pagamento. Verifique a configuração do Stripe.')
+        return redirect('accounts:upgrade')
+    except stripe.error.StripeError as e:
+        logger.error('Stripe error ao criar sessão: %s', e)
+        messages.error(request, 'Erro de comunicação com o serviço de pagamento. Tente novamente.')
+        return redirect('accounts:upgrade')
 
 
 @login_required
