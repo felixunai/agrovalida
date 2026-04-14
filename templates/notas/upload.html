@@ -1,26 +1,106 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
+
+{% block title %}Upload de Nota Fiscal - AgroValida{% endblock %}
 
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-file-earmark-arrow-up"></i> Upload de Nota Fiscal</h2>
-
-<div class="card">
-    <div class="card-body">
-        <p>Envie um arquivo <strong>XML (NF-e)</strong> ou <strong>PDF</strong> da nota fiscal. O sistema extrairá os dados automaticamente.</p>
-        <p class="text-muted small">Arquivos XML serão processados automaticamente. PDFs terão o texto extraído para conferência manual.</p>
-
-        <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="{{ form.arquivo.id_for_label }}" class="form-label">Arquivo da Nota Fiscal (XML ou PDF)</label>
-                {{ form.arquivo }}
-                {% for error in form.arquivo.errors %}
-                <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
-            </div>
-            <button type="submit" class="btn btn-success"><i class="bi bi-upload"></i> Enviar e Processar</button>
-            <a href="{% url 'notas:list' %}" class="btn btn-outline-secondary">Cancelar</a>
-        </form>
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-file-earmark-arrow-up"></i> Upload de Notas Fiscais</h2>
+        <div class="breadcrumb-text">
+            <a href="{% url 'notas:list' %}">Notas Fiscais</a>
+            <span>/</span> Upload
+        </div>
     </div>
 </div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-upload text-success"></i> Enviar arquivo(s)
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4" style="font-size:.875rem;">
+                    Selecione um ou mais arquivos <strong>XML (NF-e)</strong> ou <strong>PDF</strong>.
+                    XMLs são processados automaticamente; PDFs têm o texto extraído para revisão.
+                    Com um único arquivo você será direcionado para a tela de detalhes;
+                    com múltiplos arquivos, para a lista de notas.
+                </p>
+
+                <form method="post" enctype="multipart/form-data" novalidate id="upload-form">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="{{ form.arquivo.id_for_label }}" class="form-label">
+                            Arquivo(s) da Nota Fiscal
+                        </label>
+                        {{ form.arquivo }}
+                        {% for error in form.arquivo.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        <div class="text-muted small mt-1">
+                            <i class="bi bi-info-circle"></i>
+                            Formatos aceitos: <strong>.xml</strong> e <strong>.pdf</strong>.
+                            Segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd> no Mac) para selecionar múltiplos arquivos.
+                        </div>
+                    </div>
+
+                    <!-- File list preview -->
+                    <div id="file-list" class="mb-3" style="display:none;">
+                        <div class="form-label">Arquivos selecionados:</div>
+                        <ul id="file-names" class="list-unstyled mb-0" style="font-size:.85rem;"></ul>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success" id="btn-submit">
+                            <i class="bi bi-upload"></i> Enviar e Processar
+                        </button>
+                        <a href="{% url 'notas:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var input = document.getElementById('id_arquivo');
+    var fileList = document.getElementById('file-list');
+    var fileNames = document.getElementById('file-names');
+    var btnSubmit = document.getElementById('btn-submit');
+
+    if (!input) return;
+
+    input.addEventListener('change', function () {
+        fileNames.innerHTML = '';
+        if (this.files && this.files.length > 0) {
+            fileList.style.display = '';
+            for (var i = 0; i < this.files.length; i++) {
+                var f = this.files[i];
+                var ext = f.name.split('.').pop().toLowerCase();
+                var icon = ext === 'xml' ? 'bi-filetype-xml text-success' : 'bi-filetype-pdf text-danger';
+                var li = document.createElement('li');
+                li.className = 'py-1 border-bottom d-flex align-items-center gap-2';
+                li.innerHTML = '<i class="bi ' + icon + '"></i><span>' + f.name + '</span>' +
+                    '<span class="text-muted ms-auto" style="font-size:.78rem;">' +
+                    (f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.round(f.size / 1024) + ' KB') +
+                    '</span>';
+                fileNames.appendChild(li);
+            }
+            btnSubmit.textContent = this.files.length > 1
+                ? 'Enviar ' + this.files.length + ' arquivos'
+                : 'Enviar e Processar';
+        } else {
+            fileList.style.display = 'none';
+        }
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', function () {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+    });
+})();
+</script>
 {% endblock %}

@@ -25,21 +25,74 @@ def _limpar_nota(nota):
 
 @login_required
 def nota_upload(request):
+    from accounts.middleware import get_plan_limits
     if request.method == 'POST':
         form = NotaFiscalUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            nota = form.save(commit=False)
-            nota.cadastrado_por = request.user
-            nota.save()
-            try:
-                processar_nota(nota)
+            arquivos = form.cleaned_data['arquivo']  # list of files after clean_arquivo
+
+            # Check plan limit before creating anything
+            if not request.user.is_superuser and not getattr(request, 'is_pro', False):
+                limits = get_plan_limits(request.user)
+                max_notas = limits.get('max_notas')
+                if max_notas is not None:
+                    atual = NotaFiscal.objects.filter(cadastrado_por=request.user).count()
+                    disponivel = max_notas - atual
+                    if disponivel <= 0:
+                        messages.warning(
+                            request,
+                            f'Você atingiu o limite de {max_notas} notas fiscais no plano Gratuito. '
+                            'Atualize para o Profissional para importar mais.'
+                        )
+                        return redirect('accounts:upgrade')
+                    if len(arquivos) > disponivel:
+                        arquivos = arquivos[:disponivel]
+                        messages.warning(
+                            request,
+                            f'Você só pode importar {disponivel} nota(s) com o plano Gratuito. '
+                            f'Apenas os primeiros {disponivel} arquivo(s) foram processados.'
+                        )
+
+            notas_criadas = []
+            erros = []
+
+            for arquivo in arquivos:
+                nota = NotaFiscal(arquivo=arquivo, cadastrado_por=request.user)
+                nota.save()
+                try:
+                    processar_nota(nota)
+                    notas_criadas.append(nota)
+                except Exception as e:
+                    erros.append(f'{arquivo.name}: {e}')
+
+            if not notas_criadas:
+                messages.error(request, 'Nenhuma nota pôde ser processada.')
+                return redirect('notas:upload')
+
+            if erros:
+                messages.warning(request, f'Erros durante o processamento: {"; ".join(erros)}')
+
+            if len(notas_criadas) == 1:
+                nota = notas_criadas[0]
                 if nota.tipo == 'pdf':
-                    messages.info(request, f'Nota {nota.numero or ""} processada. O PDF foi extraído como texto — os dados precisam ser cadastrados manualmente.')
+                    messages.info(
+                        request,
+                        f'Nota {nota.numero or ""} processada. PDF extraído como texto — '
+                        'confira os dados abaixo e cadastre manualmente se necessário.'
+                    )
                 else:
-                    messages.success(request, f'Nota {nota.numero or ""} processada com sucesso. Selecione o tipo de cada item e clique em Importar.')
-            except Exception as e:
-                messages.warning(request, f'Nota salva, mas houve erro no processamento: {e}')
-            return redirect('notas:detail', pk=nota.pk)
+                    messages.success(
+                        request,
+                        f'Nota {nota.numero or ""} processada com sucesso. '
+                        'Selecione o tipo de cada item e clique em Importar.'
+                    )
+                return redirect('notas:detail', pk=nota.pk)
+            else:
+                messages.success(
+                    request,
+                    f'{len(notas_criadas)} nota(s) processada(s) com sucesso.'
+                )
+                return redirect('notas:list')
     else:
         form = NotaFiscalUploadForm()
     return render(request, 'notas/upload.html', {'form': form})

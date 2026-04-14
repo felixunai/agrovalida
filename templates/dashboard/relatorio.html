@@ -3,7 +3,15 @@
 {% block title %}Relatório de Vencimento - AgroValida{% endblock %}
 
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-file-earmark-bar-graph"></i> Relatório de Vencimento</h2>
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-file-earmark-bar-graph"></i> Relatório de Vencimento</h2>
+    </div>
+    <a href="{% url 'dashboard:relatorio_vencimento_csv' %}?{{ request.GET.urlencode }}"
+       class="btn btn-outline-success">
+        <i class="bi bi-download"></i> Exportar CSV
+    </a>
+</div>
 
 <div class="card mb-4">
     <div class="card-body">

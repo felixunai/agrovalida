@@ -2,18 +2,32 @@ from django import forms
 from .models import NotaFiscal
 
 
-class NotaFiscalUploadForm(forms.ModelForm):
-    class Meta:
-        model = NotaFiscal
-        fields = ['arquivo']
+class NotaFiscalUploadForm(forms.Form):
+    """
+    Multi-file upload form. Accepts one or more XML/PDF files.
+    Uses a plain Form (not ModelForm) so Django's FileField.getlist works correctly.
+    """
+    arquivo = forms.FileField(
+        label='Arquivo(s) da Nota Fiscal (XML ou PDF)',
+        widget=forms.ClearableFileInput(attrs={
+            'multiple': True,
+            'accept': '.xml,.pdf',
+            'class': 'form-control',
+        }),
+        help_text='Selecione um ou mais arquivos XML (NF-e) ou PDF.',
+    )
 
     def clean_arquivo(self):
-        arquivo = self.cleaned_data.get('arquivo')
-        if arquivo:
-            ext = arquivo.name.rsplit('.', 1)[-1].lower()
+        files = self.files.getlist('arquivo')
+        if not files:
+            raise forms.ValidationError('Nenhum arquivo selecionado.')
+        for f in files:
+            ext = f.name.rsplit('.', 1)[-1].lower()
             if ext not in ('xml', 'pdf'):
-                raise forms.ValidationError('Apenas arquivos XML ou PDF são aceitos.')
-        return arquivo
+                raise forms.ValidationError(
+                    f'"{f.name}": apenas arquivos XML ou PDF são aceitos.'
+                )
+        return files
 
 
 class ItemNotaForm(forms.Form):

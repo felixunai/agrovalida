@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Atualizar Plano - AgroValida{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="text-center mb-4">
+            <h2><i class="bi bi-rocket-takeoff"></i> Atualize seu Plano</h2>
+            <p class="text-muted">Desbloqueie todos os recursos do AgroValida</p>
+        </div>
+
+        {% if is_pro %}
+        <div class="alert alert-success text-center">
+            <h4><i class="bi bi-check-circle"></i> Você já está no plano Profissional!</h4>
+            <p class="mb-0">Aproveite todos os recursos sem limitações.</p>
+        </div>
+        {% else %}
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-5">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white text-center">
+                        <h4 class="mb-0">Gratuito</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2>R$ 0<small class="text-muted">/mês</small></h2>
+                        <hr>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Até {{ limits.max_defensivos }} produtos</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Até {{ limits.max_lotes }} lotes</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Até {{ limits.max_notas }} notas fiscais</li>
+                            <li class="mb-2"><i class="bi bi-x text-danger"></i> Relatórios avançados</li>
+                            <li class="mb-2"><i class="bi bi-x text-danger"></i> Importação ilimitada</li>
+                        </ul>
+                        <button class="btn btn-outline-success btn-lg w-100" disabled>Plano Atual</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card h-100 border-primary">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0"><i class="bi bi-star"></i> Profissional</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2>R$ 500<small class="text-muted">/mês</small></h2>
+                        <hr>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Produtos ilimitados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Lotes ilimitados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Notas fiscais ilimitadas</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Relatórios avançados</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Importação ilimitada</li>
+                            <li class="mb-2"><i class="bi bi-check text-success"></i> Suporte prioritário</li>
+                        </ul>
+                        <a href="mailto:contato@agrovalida.com.br?subject=Atualizar para Plano Profissional" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-rocket-takeoff"></i> Atualizar Agora
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">Entre em contato com o administrador para ativar o plano Profissional.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

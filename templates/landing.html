@@ -1,146 +1,344 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AgroValida - Controle de Vencimento de Defensivos e Sementes</title>
+    <meta name="description" content="Nunca perca um lote por vencimento. Gerencie notas fiscais, produtos e lotes em um só lugar, com alertas automáticos.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        .hero { background: linear-gradient(135deg, #198754 0%, #0d6efd 100%); color: white; padding: 80px 0; }
-        .feature-card { transition: transform 0.2s; }
-        .feature-card:hover { transform: translateY(-5px); }
-        .pricing-card { border: 2px solid #198754; }
-        .pricing-card.featured { border-color: #0d6efd; transform: scale(1.05); }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/agrovalida.css' %}">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="bi bi-shield-check"></i> AgroValida</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a>
-                <a class="nav-link" href="{% url 'accounts:register' %}"><i class="bi bi-person-plus"></i> Cadastrar</a>
-            </div>
-        </div>
-    </nav>
+<body style="background:#fff;">
 
-    <section class="hero text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Controle de Vencimento de Defensivos e Sementes</h1>
-            <p class="lead mt-3">Nunca mais perca um lote por vencimento. Gerencie suas notas fiscais, produtos e lotes em um só lugar.</p>
-            <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg mt-3"><i class="bi bi-person-plus"></i> Comece Agora</a>
-            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg mt-3 ms-2"><i class="bi bi-box-arrow-in-right"></i> Já tenho conta</a>
+<!-- Navbar -->
+<nav class="navbar landing-nav navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <span class="brand-box"><i class="bi bi-shield-check"></i></span>
+            AgroValida
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#landingNav" style="color:rgba(255,255,255,.8)">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="landingNav">
+            <ul class="navbar-nav ms-auto align-items-center gap-2 mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="#funcionalidades">Funcionalidades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#como-funciona">Como funciona</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#planos">Planos</a>
+                </li>
+                <li class="nav-item ms-1">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'accounts:register' %}"
+                       style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.85rem;font-weight:600;padding:.38rem 1rem;border-radius:.4rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;transition:all .17s;">
+                        <i class="bi bi-person-plus"></i> Cadastrar grátis
+                    </a>
+                </li>
+            </ul>
         </div>
-    </section>
+    </div>
+</nav>
 
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Funcionalidades</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-file-earmark-text display-4 text-success"></i>
-                            <h5 class="card-title mt-3">Importação de NF-e</h5>
-                            <p class="card-text">Faça upload de XML/PDF de notas fiscais e importe automaticamente defensivos, sementes e lotes com dados de vencimento.</p>
-                        </div>
-                    </div>
+<!-- Hero -->
+<section class="landing-hero">
+    <div class="container position-relative" style="z-index:1;">
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-6">
+                <div class="hero-label">
+                    <i class="bi bi-leaf-fill"></i> Sistema para o agronegócio
                 </div>
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-box-seam display-4 text-success"></i>
-                            <h5 class="card-title mt-3">Cadastro de Produtos</h5>
-                            <p class="card-text">Gerencie defensivos agrícolas e sementes com classe, registro MAPA, princípio ativo, fabricante e mais.</p>
-                        </div>
-                    </div>
+                <h1 class="hero-title">
+                    Nunca perca um lote por <span class="accent">vencimento</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Importe notas fiscais (XML ou PDF), acompanhe validades de defensivos e sementes, e receba alertas automáticos antes que seus produtos vençam.
+                </p>
+                <div class="hero-cta">
+                    <a href="{% url 'accounts:register' %}" class="btn-hero-primary">
+                        <i class="bi bi-rocket-takeoff-fill"></i> Começar grátis agora
+                    </a>
+                    <a href="{% url 'login' %}" class="btn-hero-outline">
+                        <i class="bi bi-box-arrow-in-right"></i> Já tenho conta
+                    </a>
                 </div>
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-boxes display-4 text-success"></i>
-                            <h5 class="card-title mt-3">Controle de Lotes</h5>
-                            <p class="card-text">Acompanhe número do lote, data de fabricação, validade, quantidade e fornecedor. Alertas automáticos de vencimento.</p>
-                        </div>
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value">XML</div>
+                        <div class="hero-stat-label">NF-e automática</div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-bell display-4 text-warning"></i>
-                            <h5 class="card-title mt-3">Alertas de Vencimento</h5>
-                            <p class="card-text">Receba alertas de lotes vencendo em 90 dias ou menos. Visualização por status: Vigente, Vencendo, Vencido.</p>
-                        </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value">PDF</div>
+                        <div class="hero-stat-label">Extração inteligente</div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-file-earmark-bar-graph display-4 text-info"></i>
-                            <h5 class="card-title mt-3">Relatórios</h5>
-                            <p class="card-text">Filtre relatórios por status, classe de produto e fornecedor. Dados completos para tomada de decisão.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card feature-card h-100 text-center">
-                        <div class="card-body">
-                            <i class="bi bi-speedometer2 display-4 text-primary"></i>
-                            <h5 class="card-title mt-3">Painel de Controle</h5>
-                            <p class="card-text">Dashboard com resumo de produtos, lotes vigentes, vencendo e vencidos. Visão geral por classe de produto.</p>
-                        </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value">90d</div>
+                        <div class="hero-stat-label">Alerta antecipado</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="py-5 bg-light" id="planos">
-        <div class="container">
-            <h2 class="text-center mb-5">Planos</h2>
-            <div class="row justify-content-center g-4">
-                {% for plano in planos %}
-                <div class="col-md-5">
-                    <div class="card pricing-card {% if plano.preco > 0 %}featured{% endif %} text-center">
-                        <div class="card-header {% if plano.preco > 0 %}bg-primary text-white{% else %}bg-success text-white{% endif %}">
-                            <h4 class="mb-0">{{ plano.nome }}</h4>
+            <div class="col-lg-5 offset-lg-1 d-none d-lg-block">
+                <!-- Dashboard mockup -->
+                <div class="hero-mockup">
+                    <div class="mockup-bar">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span style="font-size:.7rem;color:rgba(255,255,255,.5);margin-left:.5rem;">Painel de Controle</span>
+                    </div>
+                    <div class="mockup-stat-row">
+                        <div class="mockup-stat-box">
+                            <div class="mockup-stat-n" style="color:#74c69d;">24</div>
+                            <div class="mockup-stat-l">Vigentes</div>
                         </div>
-                        <div class="card-body">
-                            <h2 class="my-3">R$ {{ plano.preco|floatformat:0 }}<small class="text-muted">/mês</small></h2>
-                            <p>{{ plano.descricao }}</p>
-                            {% if plano.preco == 0 %}
-                            <a href="{% url 'accounts:register' %}" class="btn btn-outline-success btn-lg">Cadastrar Grátis</a>
-                            {% else %}
-                            <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Assinar Agora</a>
-                            {% endif %}
+                        <div class="mockup-stat-box">
+                            <div class="mockup-stat-n" style="color:#e8935a;">5</div>
+                            <div class="mockup-stat-l">Vencendo</div>
                         </div>
                     </div>
-                </div>
-                {% empty %}
-                <div class="col-md-8">
-                    <div class="card pricing-card text-center">
-                        <div class="card-header bg-primary text-white">
-                            <h4 class="mb-0">Profissional</h4>
-                        </div>
-                        <div class="card-body">
-                            <h2 class="my-3">R$ 500<small class="text-muted">/mês</small></h2>
-                            <p>Acesso completo ao sistema com todas as funcionalidades</p>
-                            <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Assinar Agora</a>
-                        </div>
+                    <div class="mockup-row">
+                        <span>Glifosato 480 SL — L2024001</span>
+                        <span class="mockup-badge mockup-badge-warn">38 dias</span>
+                    </div>
+                    <div class="mockup-row">
+                        <span>Azoxistrobina 250 SC — A23019</span>
+                        <span class="mockup-badge mockup-badge-ok">Vigente</span>
+                    </div>
+                    <div class="mockup-row">
+                        <span>Tebuconazol 200 EC — T220X</span>
+                        <span class="mockup-badge mockup-badge-bad">Vencido</span>
+                    </div>
+                    <div class="mockup-row">
+                        <span>Imidacloprido 700 WG — I23B</span>
+                        <span class="mockup-badge mockup-badge-ok">Vigente</span>
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <footer class="bg-dark text-white text-center py-4">
-        <div class="container">
-            <p class="mb-0">&copy; 2024 AgroValida. Todos os direitos reservados.</p>
+<!-- Features -->
+<section class="section-features" id="funcionalidades">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-label">Funcionalidades</div>
+            <h2 class="section-title">Tudo que você precisa para controlar seus lotes</h2>
+            <p class="section-subtitle">Do upload da nota fiscal até o alerta de vencimento, o AgroValida cuida de todo o processo.</p>
         </div>
-    </footer>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-green"><i class="bi bi-file-earmark-text-fill"></i></div>
+                    <h5>Importação de NF-e</h5>
+                    <p>Faça upload de XML ou PDF de notas fiscais. Os dados de produtos, lotes e validades são extraídos automaticamente.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-amber"><i class="bi bi-bell-fill"></i></div>
+                    <h5>Alertas de Vencimento</h5>
+                    <p>Visualize lotes por status — Vigente, Vencendo em breve ou Vencido — com alertas configuráveis de 90 dias.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-blue"><i class="bi bi-boxes"></i></div>
+                    <h5>Controle de Lotes</h5>
+                    <p>Número do lote, data de fabricação, validade, quantidade, fornecedor e local de armazenamento em um só lugar.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-teal"><i class="bi bi-box-seam-fill"></i></div>
+                    <h5>Cadastro de Produtos</h5>
+                    <p>Gerencie defensivos agrícolas e sementes com classe, registro MAPA, princípio ativo e fabricante.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-purple"><i class="bi bi-bar-chart-fill"></i></div>
+                    <h5>Relatórios Avançados</h5>
+                    <p>Filtre relatórios por status, classe de produto, fornecedor e intervalo de datas para tomada de decisão.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon fi-green"><i class="bi bi-speedometer2"></i></div>
+                    <h5>Painel Consolidado</h5>
+                    <p>Dashboard com resumo por status e por classe de produto. Visão instantânea do que precisa de atenção.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- How it works -->
+<section class="section-how" id="como-funciona">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-label">Como funciona</div>
+            <h2 class="section-title">Simples do início ao fim</h2>
+            <p class="section-subtitle">Em três passos você já tem seus lotes monitorados e os alertas funcionando.</p>
+        </div>
+        <div class="row justify-content-center g-0">
+            <div class="col-md-4">
+                <div class="step-card position-relative">
+                    <div class="step-number">
+                        1
+                        <span class="step-connector d-none d-md-block"></span>
+                    </div>
+                    <h5>Faça upload da NF-e</h5>
+                    <p>Envie o XML ou PDF da nota fiscal. O sistema extrai automaticamente fornecedor, produtos, lotes e datas de validade.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card position-relative">
+                    <div class="step-number">
+                        2
+                        <span class="step-connector d-none d-md-block"></span>
+                    </div>
+                    <h5>Revise e importe</h5>
+                    <p>Confirme os dados extraídos, ajuste a classe do produto se necessário e importe tudo com um clique.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h5>Monitore os vencimentos</h5>
+                    <p>Acompanhe pelo painel quais lotes estão vencendo, filtre por produto ou status e exporte relatórios.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="section-pricing" id="planos">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-label">Planos</div>
+            <h2 class="section-title">Comece grátis, cresça quando precisar</h2>
+            <p class="section-subtitle">O plano Gratuito já cobre a maioria dos usos. Passe para o Profissional quando seu estoque crescer.</p>
+        </div>
+        <div class="row justify-content-center g-4">
+            {% for plano in planos %}
+            <div class="col-md-5">
+                <div class="pricing-card {% if plano.preco > 0 %}featured{% endif %}">
+                    <div class="pricing-header {% if plano.preco > 0 %}plan-pro{% else %}plan-free{% endif %}">
+                        <div class="plan-name">{{ plano.nome }}</div>
+                        <div class="plan-desc">{% if plano.descricao %}{{ plano.descricao }}{% elif plano.preco == 0 %}Para começar sem custo{% else %}Para uso intensivo{% endif %}</div>
+                        <div class="plan-price">
+                            <span class="amount">R$ {{ plano.preco|floatformat:0 }}</span>
+                            <span class="period">/mês</span>
+                        </div>
+                    </div>
+                    <div class="pricing-body">
+                        {% if plano.preco == 0 %}
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 5 produtos</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 10 lotes</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 3 notas fiscais</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Alertas de vencimento</div>
+                        <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Relatórios avançados</div>
+                        <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Importação ilimitada</div>
+                        {% else %}
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Produtos ilimitados</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Lotes ilimitados</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Notas fiscais ilimitadas</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Alertas de vencimento</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Relatórios avançados</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Suporte prioritário</div>
+                        {% endif %}
+                    </div>
+                    <div class="pricing-footer">
+                        {% if plano.preco == 0 %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-success w-100">
+                            <i class="bi bi-person-plus"></i> Cadastrar grátis
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-rocket-takeoff"></i> Começar agora
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-md-5">
+                <div class="pricing-card">
+                    <div class="pricing-header plan-free">
+                        <div class="plan-name">Gratuito</div>
+                        <div class="plan-desc">Para começar sem custo</div>
+                        <div class="plan-price"><span class="amount">R$ 0</span><span class="period">/mês</span></div>
+                    </div>
+                    <div class="pricing-body">
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 5 produtos</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 10 lotes</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 3 notas fiscais</div>
+                        <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Relatórios avançados</div>
+                    </div>
+                    <div class="pricing-footer">
+                        <a href="{% url 'accounts:register' %}" class="btn btn-success w-100">Cadastrar grátis</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="pricing-card featured">
+                    <div class="pricing-header plan-pro">
+                        <div class="plan-name">Profissional</div>
+                        <div class="plan-desc">Para uso intensivo</div>
+                        <div class="plan-price"><span class="amount">R$ 500</span><span class="period">/mês</span></div>
+                    </div>
+                    <div class="pricing-body">
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Tudo ilimitado</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Relatórios avançados</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Suporte prioritário</div>
+                    </div>
+                    <div class="pricing-footer">
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary w-100">Começar agora</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section-cta">
+    <div class="container">
+        <h2>Comece a monitorar seus lotes hoje</h2>
+        <p>Cadastro gratuito, sem cartão de crédito. Importe sua primeira nota em minutos.</p>
+        <a href="{% url 'accounts:register' %}" class="btn-hero-primary" style="margin:0 auto;display:inline-flex;">
+            <i class="bi bi-rocket-takeoff-fill"></i> Criar conta grátis
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="landing-footer">
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <strong>AgroValida</strong> &mdash; Controle de vencimento de defensivos agrícolas e sementes
+        </div>
+        <div class="d-flex gap-3">
+            <a href="#funcionalidades">Funcionalidades</a>
+            <a href="#planos">Planos</a>
+            <a href="{% url 'login' %}">Entrar</a>
+        </div>
+        <div>&copy; {% now "Y" %} AgroValida. Todos os direitos reservados.</div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

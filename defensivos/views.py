@@ -1,19 +1,38 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Defensivo
 from .forms import DefensivoForm
 from .filters import DefensivoFilter
+from accounts.decorators import limite_alcancado
+
+DEFENSIVOS_PER_PAGE = 25
 
 
 @login_required
 def defensivo_list(request):
     queryset = Defensivo.objects.filter(cadastrado_por=request.user)
     filtro = DefensivoFilter(request.GET, queryset=queryset)
-    return render(request, 'defensivos/list.html', {'filter': filtro, 'object_list': filtro.qs})
+
+    paginator = Paginator(filtro.qs, DEFENSIVOS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+
+    return render(request, 'defensivos/list.html', {
+        'filter': filtro,
+        'object_list': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': paginator.num_pages > 1,
+        'query_string': query_params.urlencode(),
+        'total_count': filtro.qs.count(),
+    })
 
 
 @login_required
+@limite_alcancado('defensivo')
 def defensivo_create(request):
     if request.method == 'POST':
         form = DefensivoForm(request.POST)

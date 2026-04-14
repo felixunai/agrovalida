@@ -1,4 +1,6 @@
+import csv
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -55,15 +57,17 @@ def dashboard(request):
     return render(request, 'dashboard/index.html', context)
 
 
-@login_required
-def relatorio_vencimento(request):
+def _filtrar_lotes_relatorio(user, params):
+    """Shared filtering logic for the expiry report (HTML and CSV views)."""
     hoje = timezone.now().date()
     dias_alerta = getattr(settings, 'ALERTA_DIAS_VENCIMENTO', 90)
     limite_alerta = hoje + timezone.timedelta(days=dias_alerta)
 
-    status = request.GET.get('status', 'todos')
+    status    = params.get('status', 'todos')
+    classe    = params.get('classe', '')
+    fornecedor = params.get('fornecedor', '')
 
-    lotes = Lote.objects.filter(cadastrado_por=request.user).select_related('defensivo').order_by('data_validade')
+    lotes = Lote.objects.filter(cadastrado_por=user).select_related('defensivo').order_by('data_validade')
 
     if status == 'vencido':
         lotes = lotes.filter(data_validade__lt=hoje)
@@ -72,13 +76,17 @@ def relatorio_vencimento(request):
     elif status == 'vigente':
         lotes = lotes.filter(data_validade__gt=limite_alerta)
 
-    classe = request.GET.get('classe')
     if classe:
         lotes = lotes.filter(defensivo__classe=classe)
-
-    fornecedor = request.GET.get('fornecedor')
     if fornecedor:
         lotes = lotes.filter(fornecedor__icontains=fornecedor)
+
+    return lotes, status, classe, fornecedor, dias_alerta
+
+
+@login_required
+def relatorio_vencimento(request):
+    lotes, status, classe, fornecedor, dias_alerta = _filtrar_lotes_relatorio(request.user, request.GET)
 
     context = {
         'lotes': lotes,
@@ -86,7 +94,42 @@ def relatorio_vencimento(request):
         'classe': classe,
         'fornecedor': fornecedor,
         'classes': ClasseDefensivo.choices,
-        'hoje': hoje,
         'dias_alerta': dias_alerta,
     }
     return render(request, 'dashboard/relatorio.html', context)
+
+
+@login_required
+def relatorio_vencimento_csv(request):
+    """Download the expiry report as a CSV file."""
+    lotes, status, classe, fornecedor, _ = _filtrar_lotes_relatorio(request.user, request.GET)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="relatorio_vencimento.csv"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow([
+        'Nº Lote', 'Produto', 'Classe', 'Fabricação', 'Validade',
+        'Dias para Vencer', 'Status', 'Quantidade', 'Unidade',
+        'Fornecedor', 'Nota Fiscal', 'Local Armazenamento',
+    ])
+
+    STATUS_LABELS = {'vencido': 'Vencido', 'vencendo': 'Vencendo em breve', 'vigente': 'Vigente'}
+
+    for lote in lotes:
+        writer.writerow([
+            lote.numero_lote,
+            lote.defensivo.nome_comercial,
+            lote.defensivo.get_classe_display(),
+            lote.data_fabricacao.strftime('%d/%m/%Y') if lote.data_fabricacao else '',
+            lote.data_validade.strftime('%d/%m/%Y'),
+            lote.dias_para_vencer,
+            STATUS_LABELS.get(lote.status_vencimento, lote.status_vencimento),
+            str(lote.quantidade).replace('.', ','),
+            lote.get_unidade_display(),
+            lote.fornecedor,
+            lote.nota_fiscal,
+            lote.local_armazenamento,
+        ])
+
+    return response

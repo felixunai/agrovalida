@@ -1,19 +1,39 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Lote
 from .forms import LoteForm
 from .filters import LoteFilter
+from accounts.decorators import limite_alcancado
+
+LOTES_PER_PAGE = 25
 
 
 @login_required
 def lote_list(request):
     queryset = Lote.objects.filter(cadastrado_por=request.user).select_related('defensivo')
     filtro = LoteFilter(request.GET, queryset=queryset)
-    return render(request, 'lotes/list.html', {'filter': filtro, 'object_list': filtro.qs})
+
+    paginator = Paginator(filtro.qs, LOTES_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    # Preserve filter params in pagination links
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+
+    return render(request, 'lotes/list.html', {
+        'filter': filtro,
+        'object_list': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': paginator.num_pages > 1,
+        'query_string': query_params.urlencode(),
+        'total_count': filtro.qs.count(),
+    })
 
 
 @login_required
+@limite_alcancado('lote')
 def lote_create(request):
     if request.method == 'POST':
         form = LoteForm(request.POST)

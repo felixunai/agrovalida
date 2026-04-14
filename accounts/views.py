@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from .forms import RegisterForm
 from .models import UserProfile, Plano
+from .middleware import get_plan_limits
 
 
 def register(request):
@@ -76,3 +77,14 @@ def atribuir_plano(request, pk):
     profile.save()
     messages.success(request, f'Plano atualizado para {profile.user.username}.')
     return redirect('accounts:usuarios')
+
+
+@login_required
+def upgrade(request):
+    planos = Plano.objects.filter(ativo=True)
+    limits = get_plan_limits(request.user)
+    return render(request, 'accounts/upgrade.html', {
+        'planos': planos,
+        'limits': limits,
+        'is_pro': request.user.is_superuser or getattr(request, 'is_pro', False),
+    })
