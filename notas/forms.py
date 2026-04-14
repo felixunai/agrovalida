@@ -9,7 +9,7 @@ class NotaFiscalUploadForm(forms.Form):
     """
     arquivo = forms.FileField(
         label='Arquivo(s) da Nota Fiscal (XML ou PDF)',
-        widget=forms.ClearableFileInput(attrs={
+        widget=forms.FileInput(attrs={
             'multiple': True,
             'accept': '.xml,.pdf',
             'class': 'form-control',
