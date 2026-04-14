@@ -3,6 +3,14 @@ from .models import Lote
 
 
 class LoteForm(forms.ModelForm):
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            from defensivos.models import Defensivo
+            self.fields['defensivo'].queryset = Defensivo.objects.filter(
+                cadastrado_por=user, ativo=True
+            ).order_by('nome_comercial')
+
     class Meta:
         model = Lote
         fields = [

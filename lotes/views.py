@@ -36,7 +36,7 @@ def lote_list(request):
 @limite_alcancado('lote')
 def lote_create(request):
     if request.method == 'POST':
-        form = LoteForm(request.POST)
+        form = LoteForm(request.POST, user=request.user)
         if form.is_valid():
             obj = form.save(commit=False)
             obj.cadastrado_por = request.user
@@ -44,7 +44,7 @@ def lote_create(request):
             messages.success(request, f'Lote "{obj.numero_lote}" cadastrado com sucesso.')
             return redirect(obj)
     else:
-        form = LoteForm()
+        form = LoteForm(user=request.user)
     return render(request, 'lotes/form.html', {'form': form, 'titulo': 'Novo Lote'})
 
 
@@ -52,13 +52,13 @@ def lote_create(request):
 def lote_update(request, pk):
     obj = get_object_or_404(Lote, pk=pk, cadastrado_por=request.user)
     if request.method == 'POST':
-        form = LoteForm(request.POST, instance=obj)
+        form = LoteForm(request.POST, instance=obj, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, f'Lote "{obj.numero_lote}" atualizado com sucesso.')
             return redirect(obj)
     else:
-        form = LoteForm(instance=obj)
+        form = LoteForm(instance=obj, user=request.user)
     return render(request, 'lotes/form.html', {'form': form, 'titulo': 'Editar Lote'})
 
 
