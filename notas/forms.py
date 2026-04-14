@@ -1,5 +1,13 @@
 from django import forms
+from django.forms.widgets import Input
 from .models import NotaFiscal
+
+
+class MultipleFileInput(Input):
+    """FileInput that accepts multiple files without Django's built-in restriction."""
+    input_type = 'file'
+    needs_multipart_form = True
+    allow_multiple_selected = True
 
 
 class NotaFiscalUploadForm(forms.Form):
@@ -9,7 +17,7 @@ class NotaFiscalUploadForm(forms.Form):
     """
     arquivo = forms.FileField(
         label='Arquivo(s) da Nota Fiscal (XML ou PDF)',
-        widget=forms.FileInput(attrs={
+        widget=MultipleFileInput(attrs={
             'multiple': True,
             'accept': '.xml,.pdf',
             'class': 'form-control',
