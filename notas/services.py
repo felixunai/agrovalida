@@ -34,18 +34,6 @@ PALAVRAS_UNIDADE = {
     'un': 'un', 'unidade': 'un',
 }
 
-_QTD_RE = re.compile(
-    r'(\d+[\.,]?\d*)\s*(UN|KG|L|LT|ML|BAG|CX|PC|SC|TON|g|mL|l|kg|bag|cx|un|Un)',
-    re.IGNORECASE,
-)
-
-_SKIP_WORDS = [
-    'total', 'nota fiscal', 'nfe', 'cnpj', 'ie', 'icms', 'ipi', 'cofins',
-    'pis', 'fatura', 'duplicata', 'pagamento', 'destinat', 'emitente',
-    'endere', 'telefone', 'inscri', 'natureza', 'base de', 'aliquota',
-    'origem', 'destino', 'frete', 'seguro', 'desconto', 'subtotal',
-]
-
 
 def inferir_classe(descricao):
     desc_lower = descricao.lower()
@@ -265,305 +253,6 @@ def parse_nfe_xml(caminho_arquivo):
 
 
 # ─────────────────────────────────────────────
-# PDF parsing — table-based (primary strategy)
-# ─────────────────────────────────────────────
-
-def _extract_pdf_data(caminho_arquivo):
-    """Extract plain text and tables from a PDF in a single pdfplumber pass."""
-    text_pages = []
-    all_tables = []
-    try:
-        import pdfplumber
-        with pdfplumber.open(caminho_arquivo) as pdf:
-            for pagina in pdf.pages:
-                t = pagina.extract_text()
-                if t:
-                    text_pages.append(t)
-                tables = pagina.extract_tables()
-                if tables:
-                    all_tables.extend(tables)
-    except ImportError:
-        pass
-    except Exception:
-        pass
-    return '\n'.join(text_pages), all_tables
-
-
-def _find_col(header, *keywords):
-    for kw in keywords:
-        for i, h in enumerate(header):
-            if kw in str(h or '').lower():
-                return i
-    return None
-
-
-def _is_product_table(header):
-    header_str = ' '.join(str(h or '').lower() for h in header)
-    has_descr = any(k in header_str for k in ['descri', 'produto', 'mercadoria', 'item'])
-    has_other = any(k in header_str for k in ['qtd', 'quant', 'valor', 'ncm', 'cfop', 'unid', 'vl '])
-    return has_descr and has_other
-
-
-def _extract_lote_validade_from_text(texto):
-    numero_lote = ''
-    data_fabricacao = None
-    data_validade = None
-
-    m = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', texto)
-    if m:
-        numero_lote = m.group(1).strip()
-
-    m = re.search(
-        r'(?:validade|val\.?|vencim(?:ento)?)[:\s]+(\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4}|\d{1,2}[\-/]\d{4})',
-        texto, re.IGNORECASE
-    )
-    if m:
-        data_validade = _parse_data(m.group(1))
-
-    m = re.search(
-        r'(?:fabr(?:ica[çã][ao])?\.?|fab\.?)[:\s]+(\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4})',
-        texto, re.IGNORECASE
-    )
-    if m:
-        data_fabricacao = _parse_data(m.group(1))
-
-    return numero_lote, data_fabricacao, data_validade
-
-
-def _parse_nfe_pdf_tables(texto_completo, all_tables):
-    """Parse NF-e data from pdfplumber tables (primary strategy for structured PDFs)."""
-    resultado = {
-        'numero': '',
-        'data_emissao': None,
-        'fornecedor': '',
-        'cnpj_fornecedor': '',
-        'itens': [],
-    }
-
-    # Extract header metadata from text regardless
-    if texto_completo:
-        m = re.search(r'(?:NF-?e|NFe|Nota\s*Fiscal)[^\d]*(\d{1,10})', texto_completo, re.IGNORECASE)
-        if not m:
-            m = re.search(r'(?:n[°ºo]|número|numero)[^\d]*(\d{4,10})', texto_completo, re.IGNORECASE)
-        if m:
-            resultado['numero'] = m.group(1)
-
-        for padrao in [
-            r'(?:data\s*(?:de\s*)?emiss[ãa]o|dhEmi)[^\d]*(\d{2}[\-/]\d{2}[\-/]\d{4})',
-            r'(\d{2}[\-/]\d{2}[\-/]\d{4})',
-        ]:
-            m = re.search(padrao, texto_completo, re.IGNORECASE)
-            if m:
-                resultado['data_emissao'] = _parse_data(m.group(1))
-                break
-
-        m = re.search(
-            r'(?:emitente|fornecedor|raz[ãa]o\s*social)[^0-9A-Z]*([A-Z][A-ZÀ-ÿ0-9\s&.\-]{3,60})',
-            texto_completo, re.IGNORECASE
-        )
-        if m:
-            resultado['fornecedor'] = m.group(1).strip()
-
-        m = re.search(r'CNPJ[:\s]*(\d{2}\.?\d{3}\.?\d{3}[\/]?\d{4}[\-]?\d{2})', texto_completo)
-        if m:
-            resultado['cnpj_fornecedor'] = re.sub(r'[.\-/]', '', m.group(1))
-
-    for table in all_tables:
-        if not table or len(table) < 2:
-            continue
-        header = table[0]
-        if not _is_product_table(header):
-            continue
-
-        col_descr = _find_col(header, 'descri', 'produto', 'mercadoria')
-        col_qtd   = _find_col(header, 'qtd', 'quant')
-        col_un    = _find_col(header, 'un ', 'unid', 'un.')
-        col_vt    = _find_col(header, 'vl total', 'valor total', 'vlr total', 'vl prod', 'v. total')
-        col_cod   = _find_col(header, 'cód', 'cod ', 'código')
-
-        if col_descr is None:
-            continue
-
-        for row in table[1:]:
-            if not row or all(not c for c in row):
-                continue
-
-            def cell(idx, default=''):
-                if idx is not None and idx < len(row):
-                    return str(row[idx] or '').strip()
-                return default
-
-            descricao = cell(col_descr)
-            if len(descricao) < 3:
-                continue
-            if any(s in descricao.lower() for s in _SKIP_WORDS):
-                continue
-
-            qtd = 1.0
-            try:
-                q = re.sub(r'[^\d,.]', '', cell(col_qtd, '1')).replace(',', '.') or '1'
-                qtd = float(q)
-            except (ValueError, AttributeError):
-                pass
-
-            vt = None
-            try:
-                vt_str = cell(col_vt)
-                if vt_str:
-                    vt = _parse_money(vt_str)
-            except Exception:
-                pass
-
-            numero_lote, data_fab, data_val = _extract_lote_validade_from_text(descricao)
-
-            resultado['itens'].append({
-                'descricao': descricao[:200],
-                'codigo_produto': cell(col_cod),
-                'ncm': '',
-                'quantidade': qtd,
-                'unidade': cell(col_un),
-                'valor_unitario': None,
-                'valor_total': vt,
-                'numero_lote': numero_lote,
-                'data_fabricacao': data_fab,
-                'data_validade': data_val,
-            })
-
-    return resultado
-
-
-# ─────────────────────────────────────────────
-# PDF parsing — text-based (fallback strategy)
-# ─────────────────────────────────────────────
-
-def extract_text_from_pdf(caminho_arquivo):
-    try:
-        import pdfplumber
-        texto = []
-        with pdfplumber.open(caminho_arquivo) as pdf:
-            for pagina in pdf.pages:
-                t = pagina.extract_text()
-                if t:
-                    texto.append(t)
-        return '\n'.join(texto)
-    except ImportError:
-        return ''
-
-
-def parse_nfe_pdf_text(texto):
-    resultado = {
-        'numero': '',
-        'data_emissao': None,
-        'fornecedor': '',
-        'cnpj_fornecedor': '',
-        'itens': [],
-    }
-    try:
-        if not texto:
-            return resultado
-
-        m = re.search(r'(?:NF-?e|NFe|Nota\s*Fiscal)[^\d]*(\d{1,10})', texto, re.IGNORECASE)
-        if not m:
-            m = re.search(r'(?:n[°ºo]|número|numero)[^\d]*(\d{4,10})', texto, re.IGNORECASE)
-        if m:
-            resultado['numero'] = m.group(1)
-
-        for padrao in [
-            r'(?:data\s*(?:de\s*)?emiss[ãa]o|dhEmi)[^\d]*(\d{2}[\-/]\d{2}[\-/]\d{4})',
-            r'(\d{2}[\-/]\d{2}[\-/]\d{4})',
-        ]:
-            m = re.search(padrao, texto, re.IGNORECASE)
-            if m:
-                resultado['data_emissao'] = _parse_data(m.group(1))
-                break
-
-        m = re.search(
-            r'(?:emitente|fornecedor|raz[ãa]o\s*social)[^0-9A-Z]*([A-Z][A-ZÀ-ÿ0-9\s&.\-]{3,60})',
-            texto, re.IGNORECASE
-        )
-        if m:
-            resultado['fornecedor'] = m.group(1).strip()
-
-        m = re.search(r'CNPJ[:\s]*(\d{2}\.?\d{3}\.?\d{3}[\/]?\d{4}[\-]?\d{2})', texto)
-        if m:
-            resultado['cnpj_fornecedor'] = re.sub(r'[.\-/]', '', m.group(1))
-
-        blocos = re.split(r'(?:\n|\r)\s*(?:\n|\r)', texto)
-        for bloco in blocos:
-            bloco = bloco.strip()
-            if len(bloco) < 5:
-                continue
-
-            m_qtd    = _QTD_RE.search(bloco)
-            m_val    = re.search(r'R?\$?\s*(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))', bloco)
-            m_lote   = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', bloco, re.IGNORECASE)
-            m_val_dt = re.search(
-                r'(?:validade|val\.?|vencim(?:ento)?)[:\s]+(\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4}|\d{1,2}[\-/]\d{4})',
-                bloco, re.IGNORECASE
-            )
-            m_fab_dt = re.search(
-                r'(?:fabr(?:ica[çã][ao])?\.?|fab\.?)[:\s]+(\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4})',
-                bloco, re.IGNORECASE
-            )
-
-            if m_qtd or m_val or m_lote:
-                linhas = bloco.split('\n')
-                descricao = linhas[0].strip()[:200] if linhas else bloco[:200]
-                descricao = re.sub(r'^\d+\s*', '', descricao)
-
-                if any(s in descricao.lower() for s in _SKIP_WORDS):
-                    continue
-
-                resultado['itens'].append({
-                    'descricao': descricao,
-                    'codigo_produto': '',
-                    'ncm': '',
-                    'quantidade': float(m_qtd.group(1).replace(',', '.')) if m_qtd else 1,
-                    'unidade': m_qtd.group(2).upper() if m_qtd else '',
-                    'valor_unitario': None,
-                    'valor_total': _parse_money(m_val.group(1)) if m_val else None,
-                    'numero_lote': m_lote.group(1).strip() if m_lote else '',
-                    'data_fabricacao': _parse_data(m_fab_dt.group(1)) if m_fab_dt else None,
-                    'data_validade': _parse_data(m_val_dt.group(1)) if m_val_dt else None,
-                })
-
-        if not resultado['itens']:
-            _PROD_WORDS = [
-                'semente', 'defensivo', 'herbicida', 'fungicida', 'inseticida',
-                'acaricida', 'adjuvante', 'regulador', 'biológico', 'biologico',
-                'adubo', 'fertilizante', 'npk', 'ureia', 'glifosato', 'roundup',
-            ]
-            for linha in texto.split('\n'):
-                linha = linha.strip()
-                if len(linha) < 5 or any(s in linha.lower() for s in _SKIP_WORDS):
-                    continue
-                if any(w in linha.lower() for w in _PROD_WORDS):
-                    m_qtd2  = _QTD_RE.search(linha)
-                    m_lote2 = re.search(r'[Ll]ote[:\s]+([A-Za-z0-9/\-\.]+)', linha, re.IGNORECASE)
-                    m_val2  = re.search(
-                        r'(?:validade|val\.?|vencim(?:ento)?)[:\s]+(\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4}|\d{1,2}[\-/]\d{4})',
-                        linha, re.IGNORECASE
-                    )
-                    resultado['itens'].append({
-                        'descricao': linha[:200],
-                        'codigo_produto': '',
-                        'ncm': '',
-                        'quantidade': float(m_qtd2.group(1).replace(',', '.')) if m_qtd2 else 1,
-                        'unidade': m_qtd2.group(2).upper() if m_qtd2 else '',
-                        'valor_unitario': None,
-                        'valor_total': None,
-                        'numero_lote': m_lote2.group(1).strip() if m_lote2 else '',
-                        'data_fabricacao': None,
-                        'data_validade': _parse_data(m_val2.group(1)) if m_val2 else None,
-                    })
-
-    except Exception:
-        pass
-
-    return resultado
-
-
-# ─────────────────────────────────────────────
 # Main orchestration
 # ─────────────────────────────────────────────
 
@@ -573,73 +262,32 @@ def processar_nota(nota):
     caminho = nota.arquivo.path
     ext = os.path.splitext(caminho)[1].lower()
 
-    if ext == '.xml':
-        dados = parse_nfe_xml(caminho)
-        nota.numero = dados['numero']
-        nota.data_emissao = dados['data_emissao']
-        nota.fornecedor = dados['fornecedor']
-        nota.cnpj_fornecedor = dados['cnpj_fornecedor']
-        nota.tipo = 'xml'
+    if ext != '.xml':
+        raise ValueError(
+            f'Formato "{ext}" não suportado. Envie o arquivo XML da NF-e.'
+        )
 
-        for item_dados in dados['itens']:
-            ItemNotaFiscal.objects.create(
-                nota=nota,
-                descricao=item_dados['descricao'],
-                codigo_produto=item_dados['codigo_produto'],
-                ncm=item_dados['ncm'],
-                quantidade=item_dados.get('quantidade', 1),
-                unidade=item_dados.get('unidade', ''),
-                valor_unitario=item_dados.get('valor_unitario'),
-                valor_total=item_dados.get('valor_total'),
-                numero_lote=item_dados.get('numero_lote', ''),
-                data_fabricacao=item_dados.get('data_fabricacao'),
-                data_validade=item_dados.get('data_validade'),
-            )
+    dados = parse_nfe_xml(caminho)
+    nota.numero = dados['numero']
+    nota.data_emissao = dados['data_emissao']
+    nota.fornecedor = dados['fornecedor']
+    nota.cnpj_fornecedor = dados['cnpj_fornecedor']
+    nota.tipo = 'xml'
 
-    elif ext == '.pdf':
-        texto, all_tables = _extract_pdf_data(caminho)
-        nota.texto_extraido = texto
-        nota.tipo = 'pdf'
-
-        # Strategy 1: table-based (most reliable for structured NF-e PDFs)
-        dados = _parse_nfe_pdf_tables(texto, all_tables)
-
-        # Strategy 2: text-based fallback if no items found via tables
-        if not dados['itens']:
-            dados_texto = parse_nfe_pdf_text(texto)
-            dados['itens'] = dados_texto['itens']
-            if not dados['numero']:
-                dados['numero'] = dados_texto['numero']
-            if not dados['data_emissao']:
-                dados['data_emissao'] = dados_texto['data_emissao']
-            if not dados['fornecedor']:
-                dados['fornecedor'] = dados_texto['fornecedor']
-            if not dados['cnpj_fornecedor']:
-                dados['cnpj_fornecedor'] = dados_texto['cnpj_fornecedor']
-
-        if dados['numero']:
-            nota.numero = dados['numero']
-        if dados['data_emissao']:
-            nota.data_emissao = dados['data_emissao']
-        if dados['fornecedor']:
-            nota.fornecedor = dados['fornecedor']
-        if dados['cnpj_fornecedor']:
-            nota.cnpj_fornecedor = dados['cnpj_fornecedor']
-
-        for item_dados in dados['itens']:
-            ItemNotaFiscal.objects.create(
-                nota=nota,
-                descricao=item_dados['descricao'],
-                codigo_produto=item_dados.get('codigo_produto', ''),
-                ncm=item_dados.get('ncm', ''),
-                quantidade=item_dados.get('quantidade', 1),
-                unidade=item_dados.get('unidade', ''),
-                valor_unitario=item_dados.get('valor_unitario'),
-                valor_total=item_dados.get('valor_total'),
-                numero_lote=item_dados.get('numero_lote', ''),
-                data_fabricacao=item_dados.get('data_fabricacao'),
-                data_validade=item_dados.get('data_validade'),
-            )
+    for item_dados in dados['itens']:
+        ItemNotaFiscal.objects.create(
+            nota=nota,
+            descricao=item_dados['descricao'],
+            codigo_produto=item_dados['codigo_produto'],
+            ncm=item_dados['ncm'],
+            quantidade=item_dados.get('quantidade', 1),
+            unidade=item_dados.get('unidade', ''),
+            valor_unitario=item_dados.get('valor_unitario'),
+            valor_total=item_dados.get('valor_total'),
+            numero_lote=item_dados.get('numero_lote', ''),
+            data_fabricacao=item_dados.get('data_fabricacao'),
+            data_validade=item_dados.get('data_validade'),
+        )
 
     nota.processado = True
     nota.status_importacao = 'processado'

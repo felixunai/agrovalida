@@ -20,17 +20,17 @@ class MultipleFileInput(Input):
 
 class NotaFiscalUploadForm(forms.Form):
     """
-    Multi-file upload form. Accepts one or more XML/PDF files.
+    Multi-file upload form. Accepts one or more XML files (NF-e).
     Uses a plain Form (not ModelForm) so Django's FileField.getlist works correctly.
     """
     arquivo = forms.FileField(
-        label='Arquivo(s) da Nota Fiscal (XML ou PDF)',
+        label='Arquivo(s) XML da Nota Fiscal',
         widget=MultipleFileInput(attrs={
             'multiple': True,
-            'accept': '.xml,.pdf',
+            'accept': '.xml',
             'class': 'form-control',
         }),
-        help_text='Selecione um ou mais arquivos XML (NF-e) ou PDF.',
+        help_text='Selecione um ou mais arquivos XML (NF-e).',
     )
 
     def clean_arquivo(self):
@@ -39,9 +39,10 @@ class NotaFiscalUploadForm(forms.Form):
             raise forms.ValidationError('Nenhum arquivo selecionado.')
         for f in files:
             ext = f.name.rsplit('.', 1)[-1].lower()
-            if ext not in ('xml', 'pdf'):
+            if ext != 'xml':
                 raise forms.ValidationError(
-                    f'"{f.name}": apenas arquivos XML ou PDF são aceitos.'
+                    f'"{f.name}": apenas arquivos XML são aceitos. '
+                    'Solicite o XML ao seu fornecedor.'
                 )
         return files
 

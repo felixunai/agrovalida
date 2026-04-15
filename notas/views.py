@@ -74,18 +74,11 @@ def nota_upload(request):
 
             if len(notas_criadas) == 1:
                 nota = notas_criadas[0]
-                if nota.tipo == 'pdf':
-                    messages.info(
-                        request,
-                        f'Nota {nota.numero or ""} processada. PDF extraído como texto — '
-                        'confira os dados abaixo e cadastre manualmente se necessário.'
-                    )
-                else:
-                    messages.success(
-                        request,
-                        f'Nota {nota.numero or ""} processada com sucesso. '
-                        'Selecione o tipo de cada item e clique em Importar.'
-                    )
+                messages.success(
+                    request,
+                    f'Nota {nota.numero or ""} processada com sucesso. '
+                    'Selecione o tipo de cada item e clique em Importar.'
+                )
                 return redirect('notas:detail', pk=nota.pk)
             else:
                 messages.success(

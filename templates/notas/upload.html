@@ -21,11 +21,16 @@
             </div>
             <div class="card-body">
                 <p class="text-muted mb-4" style="font-size:.875rem;">
-                    Selecione um ou mais arquivos <strong>XML (NF-e)</strong> ou <strong>PDF</strong>.
-                    XMLs são processados automaticamente; PDFs têm o texto extraído para revisão.
+                    Selecione um ou mais arquivos <strong>XML (NF-e)</strong>.
+                    Os dados de lote e validade são extraídos automaticamente.
                     Com um único arquivo você será direcionado para a tela de detalhes;
                     com múltiplos arquivos, para a lista de notas.
                 </p>
+                <div class="alert alert-info py-2 px-3 mb-3" style="font-size:.85rem;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Somente XML é aceito.</strong>
+                    Caso seu fornecedor envie apenas PDF, solicite também o arquivo XML — todo emissor de NF-e é obrigado a disponibilizá-lo.
+                </div>
 
                 <form method="post" enctype="multipart/form-data" novalidate id="upload-form">
                     {% csrf_token %}
@@ -39,7 +44,7 @@
                         {% endfor %}
                         <div class="text-muted small mt-1">
                             <i class="bi bi-info-circle"></i>
-                            Formatos aceitos: <strong>.xml</strong> e <strong>.pdf</strong>.
+                            Formato aceito: <strong>.xml</strong>.
                             Segure <kbd>Ctrl</kbd> (ou <kbd>⌘</kbd> no Mac) para selecionar múltiplos arquivos.
                         </div>
                     </div>
@@ -80,7 +85,7 @@
             for (var i = 0; i < this.files.length; i++) {
                 var f = this.files[i];
                 var ext = f.name.split('.').pop().toLowerCase();
-                var icon = ext === 'xml' ? 'bi-filetype-xml text-success' : 'bi-filetype-pdf text-danger';
+                var icon = ext === 'xml' ? 'bi-filetype-xml text-success' : 'bi-exclamation-triangle text-warning';
                 var li = document.createElement('li');
                 li.className = 'py-1 border-bottom d-flex align-items-center gap-2';
                 li.innerHTML = '<i class="bi ' + icon + '"></i><span>' + f.name + '</span>' +
