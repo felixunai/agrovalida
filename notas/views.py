@@ -61,9 +61,22 @@ def nota_upload(request):
                 nota.save()
                 try:
                     processar_nota(nota)
-                    notas_criadas.append(nota)
                 except Exception as e:
+                    nota.arquivo.delete(save=False)
+                    nota.delete()
                     erros.append(f'{arquivo.name}: {e}')
+                    continue
+
+                if nota.numero and NotaFiscal.objects.filter(
+                    numero=nota.numero,
+                    cadastrado_por=request.user,
+                ).exclude(pk=nota.pk).exists():
+                    nota.arquivo.delete(save=False)
+                    nota.delete()
+                    erros.append(f'{arquivo.name}: Nota {nota.numero} já foi importada anteriormente.')
+                    continue
+
+                notas_criadas.append(nota)
 
             if not notas_criadas:
                 messages.error(request, 'Nenhuma nota pôde ser processada.')
