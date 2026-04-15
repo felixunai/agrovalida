@@ -180,11 +180,15 @@ def assinar(request):
         success_url = request.build_absolute_uri('/accounts/assinar/sucesso/')
         cancel_url = request.build_absolute_uri('/accounts/upgrade/')
 
+        # Detecta se o preço é recorrente ou avulso (one-time)
+        stripe_price = stripe.Price.retrieve(price_id)
+        is_recurring = getattr(stripe_price, 'type', None) == 'recurring' or getattr(stripe_price, 'recurring', None) is not None
+
         session = stripe.checkout.Session.create(
             customer=profile.stripe_customer_id,
             payment_method_types=['card'],
             line_items=[{'price': price_id, 'quantity': 1}],
-            mode='subscription',
+            mode='subscription' if is_recurring else 'payment',
             success_url=success_url + '?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=cancel_url,
             metadata={'user_id': request.user.pk, 'periodo': periodo},
