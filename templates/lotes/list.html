@@ -13,22 +13,57 @@
     </a>
 </div>
 
-<div class="filter-bar">
-    <form method="get">
-        {{ filter.form.defensivo__nome_comercial }}
-        {{ filter.form.numero_lote }}
-        {{ filter.form.fornecedor }}
-        {{ filter.form.status_vencimento }}
-        {{ filter.form.data_validade_inicio }}
-        {{ filter.form.data_validade_fim }}
-        {{ filter.form.fazenda }}
-        <button type="submit" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-search"></i> Filtrar
-        </button>
-        <a href="{% url 'lotes:list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-lg"></i> Limpar
-        </a>
-    </form>
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get">
+            <div class="row g-2 align-items-end">
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-box-seam"></i> {{ filter.form.defensivo__nome_comercial.label }}
+                    </label>
+                    {{ filter.form.defensivo__nome_comercial }}
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-upc-scan"></i> {{ filter.form.numero_lote.label }}
+                    </label>
+                    {{ filter.form.numero_lote }}
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-circle-half"></i> {{ filter.form.status_vencimento.label }}
+                    </label>
+                    {{ filter.form.status_vencimento }}
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-geo-alt"></i> {{ filter.form.fazenda.label }}
+                    </label>
+                    {{ filter.form.fazenda }}
+                </div>
+                <div class="col-sm-6 col-md-1">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-calendar"></i> {{ filter.form.data_validade_inicio.label }}
+                    </label>
+                    {{ filter.form.data_validade_inicio }}
+                </div>
+                <div class="col-sm-6 col-md-1">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-calendar-check"></i> {{ filter.form.data_validade_fim.label }}
+                    </label>
+                    {{ filter.form.data_validade_fim }}
+                </div>
+                <div class="col-sm-12 col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill" title="Filtrar">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <a href="{% url 'lotes:list' %}" class="btn btn-outline-secondary btn-sm" title="Limpar filtros">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card">

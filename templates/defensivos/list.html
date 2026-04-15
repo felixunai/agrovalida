@@ -13,19 +13,45 @@
     </a>
 </div>
 
-<div class="filter-bar">
-    <form method="get">
-        {{ filter.form.nome_comercial }}
-        {{ filter.form.classe }}
-        {{ filter.form.fabricante }}
-        {{ filter.form.ativo }}
-        <button type="submit" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-search"></i> Filtrar
-        </button>
-        <a href="{% url 'defensivos:list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-lg"></i> Limpar
-        </a>
-    </form>
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get">
+            <div class="row g-2 align-items-end">
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-search"></i> {{ filter.form.nome_comercial.label }}
+                    </label>
+                    {{ filter.form.nome_comercial }}
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-tag"></i> {{ filter.form.classe.label }}
+                    </label>
+                    {{ filter.form.classe }}
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-building"></i> {{ filter.form.fabricante.label }}
+                    </label>
+                    {{ filter.form.fabricante }}
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-toggle-on"></i> {{ filter.form.ativo.label }}
+                    </label>
+                    {{ filter.form.ativo }}
+                </div>
+                <div class="col-sm-12 col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{% url 'defensivos:list' %}" class="btn btn-outline-secondary btn-sm" title="Limpar filtros">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card">

@@ -1,4 +1,5 @@
 import django_filters
+from django import forms
 from django.utils import timezone
 from .models import Lote
 
@@ -11,22 +12,35 @@ class LoteFilter(django_filters.FilterSet):
     )
 
     defensivo__nome_comercial = django_filters.CharFilter(
-        lookup_expr='icontains', label='Nome do produto'
+        lookup_expr='icontains', label='Produto',
+        widget=forms.TextInput(attrs={'placeholder': 'Buscar produto…', 'class': 'form-control form-control-sm'}),
     )
-    numero_lote = django_filters.CharFilter(lookup_expr='icontains', label='Nº do lote')
-    fornecedor = django_filters.CharFilter(lookup_expr='icontains')
+    numero_lote = django_filters.CharFilter(
+        lookup_expr='icontains', label='Nº do lote',
+        widget=forms.TextInput(attrs={'placeholder': 'Nº do lote…', 'class': 'form-control form-control-sm'}),
+    )
+    fornecedor = django_filters.CharFilter(
+        lookup_expr='icontains', label='Fornecedor',
+        widget=forms.TextInput(attrs={'placeholder': 'Fornecedor…', 'class': 'form-control form-control-sm'}),
+    )
     status_vencimento = django_filters.ChoiceFilter(
-        choices=STATUS_CHOICES, method='filter_status', label='Status'
+        choices=[('', 'Todos os status')] + list(STATUS_CHOICES),
+        method='filter_status', label='Status',
+        empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}),
     )
     data_validade_inicio = django_filters.DateFilter(
-        field_name='data_validade', lookup_expr='gte', label='Validade a partir de'
+        field_name='data_validade', lookup_expr='gte', label='Validade de',
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}),
     )
     data_validade_fim = django_filters.DateFilter(
-        field_name='data_validade', lookup_expr='lte', label='Validade até'
+        field_name='data_validade', lookup_expr='lte', label='Validade até',
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control form-control-sm'}),
     )
-
     fazenda = django_filters.ModelChoiceFilter(
         queryset=None, label='Fazenda',
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}),
+        empty_label='Todas as fazendas',
     )
 
     def __init__(self, *args, **kwargs):
