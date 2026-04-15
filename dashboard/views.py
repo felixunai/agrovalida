@@ -8,6 +8,7 @@ from django.conf import settings
 from lotes.models import Lote
 from defensivos.models import Defensivo, ClasseDefensivo
 from notas.models import NotaFiscal
+from accounts.models import Plano
 
 
 @login_required
@@ -44,6 +45,8 @@ def dashboard(request):
         )),
     ).order_by('-total')
 
+    plano_pro = Plano.objects.filter(ativo=True, preco__gt=0).order_by('preco').first()
+
     context = {
         'total_defensivos': total_defensivos,
         'total_lotes': total_lotes,
@@ -55,6 +58,7 @@ def dashboard(request):
         'lotes_proximos': lotes_proximos,
         'por_classe': por_classe,
         'dias_alerta': dias_alerta,
+        'plano_pro': plano_pro,
     }
     return render(request, 'dashboard/index.html', context)
 

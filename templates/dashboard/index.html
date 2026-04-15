@@ -92,9 +92,13 @@
                 </div>
             </div>
             <div class="col-lg-3 text-center">
-                <div class="fw-bold text-primary fs-4">R$ 399<small class="fs-6 text-muted">/mês</small></div>
-                <div class="text-muted small mb-2">ou R$ 4.000/ano (economize 16%)</div>
-                <ul class="list-unstyled text-start small">
+                {% if plano_pro %}
+                <div class="fw-bold text-primary fs-4">R$ {{ plano_pro.preco|floatformat:0 }}<small class="fs-6 text-muted">/mês</small></div>
+                {% if plano_pro.preco_anual %}
+                <div class="text-muted small mb-2">ou R$ {{ plano_pro.preco_anual|floatformat:0 }}/ano</div>
+                {% endif %}
+                {% endif %}
+                <ul class="list-unstyled text-start small mt-2">
                     <li><i class="bi bi-check-circle text-success"></i> Produtos e lotes ilimitados</li>
                     <li><i class="bi bi-check-circle text-success"></i> Relatórios avançados</li>
                     <li><i class="bi bi-check-circle text-success"></i> Suporte prioritário</li>
@@ -102,11 +106,13 @@
             </div>
             <div class="col-lg-3 text-center d-flex flex-column gap-2">
                 <a href="{% url 'accounts:assinar' %}?periodo=mensal" class="btn btn-primary">
-                    <i class="bi bi-credit-card"></i> Assinar por R$ 399/mês
+                    <i class="bi bi-credit-card"></i> Assinar{% if plano_pro %} por R$ {{ plano_pro.preco|floatformat:0 }}/mês{% endif %}
                 </a>
+                {% if plano_pro and plano_pro.preco_anual %}
                 <a href="{% url 'accounts:assinar' %}?periodo=anual" class="btn btn-outline-primary">
-                    <i class="bi bi-calendar-check"></i> Plano anual — R$ 4.000
+                    <i class="bi bi-calendar-check"></i> Plano anual — R$ {{ plano_pro.preco_anual|floatformat:0 }}
                 </a>
+                {% endif %}
                 <a href="{% url 'accounts:upgrade' %}" class="btn btn-link btn-sm text-muted p-0">Ver detalhes</a>
             </div>
         </div>
