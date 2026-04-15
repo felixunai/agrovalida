@@ -12,6 +12,7 @@ class ClasseDefensivo(models.TextChoices):
     REGULADOR = 'regulador', 'Regulador de Crescimento'
     BIOLOGICO = 'biologico', 'Biológico'
     SEMENTE = 'semente', 'Semente'
+    MEDICAMENTO_VET = 'medicamento_vet', 'Medicamento Veterinário'
     OUTRO = 'outro', 'Outro'
 
 
