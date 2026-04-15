@@ -197,23 +197,73 @@ def assinar(request):
 
 @login_required
 def checkout_sucesso(request):
-    """Página de retorno após pagamento bem-sucedido no Stripe.
+    """Retorno após pagamento no Stripe.
 
-    Ativa o plano imediatamente via session_id para cobrir casos em que o
-    webhook ainda não foi entregue.
+    Ativa o plano imediatamente usando request.user (sem depender do webhook).
+    Redireciona para o painel para que o PlanMiddleware rode novamente com o
+    plano já atualizado no banco.
     """
     session_id = request.GET.get('session_id')
     if session_id:
         import stripe
         stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
         try:
-            session = stripe.checkout.Session.retrieve(session_id)
-            if session.get('payment_status') == 'paid':
-                _ativar_plano_stripe(session)
-                logger.info('Plano ativado via checkout_sucesso para session %s', session_id)
+            session = stripe.checkout.Session.retrieve(
+                session_id,
+                expand=['subscription'],
+            )
+            if session.payment_status == 'paid':
+                _ativar_plano_por_usuario(request.user, session)
+                messages.success(
+                    request,
+                    'Plano Profissional ativado com sucesso! Bem-vindo ao Pro.',
+                )
+                return redirect('dashboard:index')
         except Exception as e:
             logger.warning('Erro ao ativar plano via session_id %s: %s', session_id, e)
     return render(request, 'accounts/checkout_sucesso.html')
+
+
+def _ativar_plano_por_usuario(user, session):
+    """Ativa o plano Pro diretamente pelo usuário logado.
+
+    Mais confiável que _ativar_plano_stripe pois não depende de lookup por
+    customer_id; usa o usuário autenticado na request.
+    """
+    from django.utils import timezone
+    from dateutil.relativedelta import relativedelta
+    import datetime
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    metadata = session.get('metadata') or {}
+    periodo = metadata.get('periodo', 'mensal')
+
+    # Tenta pegar subscription expandida primeiro
+    subscription = session.get('subscription')
+    if subscription and hasattr(subscription, 'id'):
+        subscription_id = subscription.id
+        try:
+            data_fim = datetime.date.fromtimestamp(subscription.current_period_end)
+        except Exception:
+            delta = relativedelta(years=1) if periodo == 'anual' else relativedelta(months=1)
+            data_fim = timezone.now().date() + delta
+    else:
+        # subscription pode ser só o ID (string) ou None
+        subscription_id = subscription or ''
+        delta = relativedelta(years=1) if periodo == 'anual' else relativedelta(months=1)
+        data_fim = timezone.now().date() + delta
+
+    plano_pro = Plano.objects.filter(nome='Profissional').first()
+
+    profile.plano = plano_pro
+    profile.plano_ativo = True
+    profile.stripe_customer_id = session.get('customer') or profile.stripe_customer_id
+    profile.stripe_subscription_id = subscription_id
+    profile.periodo_plano = periodo
+    profile.data_fim_plano = data_fim
+    profile.save()
+    logger.info('Plano Pro ativado via checkout_sucesso para %s até %s', user.email, data_fim)
 
 
 @csrf_exempt
