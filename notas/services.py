@@ -294,7 +294,7 @@ def processar_nota(nota):
     nota.save()
 
 
-def importar_nota_automatico(nota, user=None, classes_por_item=None, fazenda=None):
+def importar_nota_automatico(nota, user=None, classes_por_item=None, fazenda=None, local_armazenamento=''):
     from .models import ItemNotaFiscal
     from defensivos.models import Defensivo
     from lotes.models import Lote, UnidadeMedida
@@ -366,6 +366,7 @@ def importar_nota_automatico(nota, user=None, classes_por_item=None, fazenda=Non
                 fornecedor=nota.fornecedor or '',
                 nota_fiscal=nota.numero or '',
                 fazenda=fazenda,
+                local_armazenamento=local_armazenamento or '',
                 cadastrado_por=user,
             )
             lotes_criados += 1

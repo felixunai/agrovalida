@@ -34,6 +34,7 @@ class Lote(models.Model):
     nota_fiscal = models.CharField('nota fiscal', max_length=100, blank=True, db_index=True)
     local_armazenamento = models.CharField('local de armazenamento', max_length=200, blank=True)
     observacoes = models.TextField('observações', blank=True)
+    ativo = models.BooleanField('ativo', default=True, db_index=True)
     fazenda = models.ForeignKey(
         'fazendas.Fazenda', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='lotes', verbose_name='fazenda',

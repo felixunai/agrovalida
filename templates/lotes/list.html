@@ -95,7 +95,7 @@
             </thead>
             <tbody>
                 {% for obj in object_list %}
-                <tr class="{% if obj.status_vencimento == 'vencido' %}table-danger{% elif obj.status_vencimento == 'vencendo' %}table-warning{% endif %}">
+                <tr class="{% if not obj.ativo %}text-muted{% elif obj.status_vencimento == 'vencido' %}table-danger{% elif obj.status_vencimento == 'vencendo' %}table-warning{% endif %}" {% if not obj.ativo %}style="opacity:.55"{% endif %}>
                     <td><a href="{{ obj.get_absolute_url }}">{{ obj.numero_lote }}</a></td>
                     <td>{{ obj.defensivo.nome_comercial }}</td>
                     <td><span class="text-muted small">{{ obj.defensivo.get_classe_display }}</span></td>
@@ -121,6 +121,13 @@
                         <a href="{% url 'lotes:update' obj.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </a>
+                        <form method="post" action="{% url 'lotes:toggle_ativo' obj.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if obj.ativo %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                                    title="{% if obj.ativo %}Desativar lote{% else %}Reativar lote{% endif %}">
+                                <i class="bi bi-{% if obj.ativo %}pause-circle{% else %}play-circle{% endif %}"></i>
+                            </button>
+                        </form>
                         <a href="{% url 'lotes:delete' obj.pk %}" class="btn btn-sm btn-outline-danger" title="Excluir">
                             <i class="bi bi-trash"></i>
                         </a>

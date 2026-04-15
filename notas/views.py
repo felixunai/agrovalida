@@ -140,8 +140,11 @@ def nota_importar(request, pk):
         except Fazenda.DoesNotExist:
             pass
 
+    local_armazenamento = request.POST.get('local_armazenamento', '').strip()
+
     defensivos_criados, lotes_criados = importar_nota_automatico(
-        nota, user=request.user, classes_por_item=tipos, fazenda=fazenda
+        nota, user=request.user, classes_por_item=tipos, fazenda=fazenda,
+        local_armazenamento=local_armazenamento,
     )
     messages.success(
         request,

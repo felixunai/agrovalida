@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 from .models import Lote
 from .forms import LoteForm
 from .filters import LoteFilter
@@ -76,3 +77,17 @@ def lote_delete(request, pk):
         messages.success(request, f'Lote "{obj.numero_lote}" excluído.')
         return redirect('lotes:list')
     return render(request, 'lotes/confirm_delete.html', {'object': obj})
+
+
+@login_required
+@require_POST
+def lote_toggle_ativo(request, pk):
+    obj = get_object_or_404(Lote, pk=pk, cadastrado_por=request.user)
+    obj.ativo = not obj.ativo
+    obj.save(update_fields=['ativo'])
+    action = 'reativado' if obj.ativo else 'desativado'
+    messages.success(request, f'Lote "{obj.numero_lote}" {action}.')
+    next_url = request.POST.get('next', 'lotes:list')
+    if next_url.startswith('/'):
+        return redirect(next_url)
+    return redirect('lotes:list')

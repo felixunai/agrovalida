@@ -192,7 +192,7 @@
             <tbody>
                 {% for item in por_classe %}
                 <tr>
-                    <td class="fw-500">{{ item.defensivo__classe|capfirst }}</td>
+                    <td class="fw-500">{% for val, lbl in classes %}{% if val == item.defensivo__classe %}{{ lbl }}{% endif %}{% endfor %}</td>
                     <td>{{ item.total }}</td>
                     <td>
                         {% if item.vencidos %}
