@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
+from .models import Plano
 
 
 class RegisterForm(forms.ModelForm):
@@ -85,3 +86,24 @@ class PasswordChangeForm(DjangoPasswordChangeForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+
+class PlanoForm(forms.ModelForm):
+    class Meta:
+        model = Plano
+        fields = ['nome', 'preco', 'preco_anual', 'descricao', 'ativo']
+        labels = {
+            'nome': 'Nome do plano',
+            'preco': 'Preço mensal (R$)',
+            'preco_anual': 'Preço anual (R$)',
+            'descricao': 'Descrição / Benefícios',
+            'ativo': 'Visível na página de upgrade',
+        }
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'preco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'preco_anual': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3,
+                                               'placeholder': 'Ex: Produtos ilimitados, Relatórios, Suporte prioritário'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

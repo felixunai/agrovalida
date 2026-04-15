@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Gerenciar Planos - AgroValida{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2><i class="bi bi-tag"></i> Planos</h2>
+    <a href="{% url 'accounts:criar_plano' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Novo Plano
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Nome</th>
+                <th>Preço Mensal</th>
+                <th>Preço Anual</th>
+                <th>Descrição</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plano in planos %}
+            <tr class="{% if not plano.ativo %}table-secondary text-muted{% endif %}">
+                <td><strong>{{ plano.nome }}</strong></td>
+                <td>R$ {{ plano.preco|floatformat:2 }}/mês</td>
+                <td>{% if plano.preco_anual %}R$ {{ plano.preco_anual|floatformat:2 }}/ano{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                <td class="small text-muted">{{ plano.descricao|truncatechars:60|default:"—" }}</td>
+                <td>
+                    {% if plano.ativo %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'accounts:editar_plano' plano.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <form method="post" action="{% url 'accounts:toggle_plano' plano.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-{% if plano.ativo %}danger{% else %}success{% endif %}">
+                                {% if plano.ativo %}<i class="bi bi-eye-slash"></i> Desativar{% else %}<i class="bi bi-eye"></i> Ativar{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-4">Nenhum plano cadastrado. <a href="{% url 'accounts:criar_plano' %}">Criar o primeiro</a>.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

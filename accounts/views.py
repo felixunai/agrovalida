@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.conf import settings
-from .forms import RegisterForm, PerfilForm, PasswordChangeForm
+from .forms import RegisterForm, PerfilForm, PasswordChangeForm, PlanoForm
 from .models import UserProfile, Plano
 from .middleware import get_plan_limits
 
@@ -197,7 +197,22 @@ def assinar(request):
 
 @login_required
 def checkout_sucesso(request):
-    """Página de retorno após pagamento bem-sucedido no Stripe."""
+    """Página de retorno após pagamento bem-sucedido no Stripe.
+
+    Ativa o plano imediatamente via session_id para cobrir casos em que o
+    webhook ainda não foi entregue.
+    """
+    session_id = request.GET.get('session_id')
+    if session_id:
+        import stripe
+        stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.get('payment_status') == 'paid':
+                _ativar_plano_stripe(session)
+                logger.info('Plano ativado via checkout_sucesso para session %s', session_id)
+        except Exception as e:
+            logger.warning('Erro ao ativar plano via session_id %s: %s', session_id, e)
     return render(request, 'accounts/checkout_sucesso.html')
 
 
@@ -312,3 +327,63 @@ def _desativar_plano_stripe(subscription):
         logger.info('Plano desativado via Stripe para %s', profile.user.email)
     except UserProfile.DoesNotExist:
         pass
+
+
+# ---------------------------------------------------------------------------
+# Gestão de Planos (admin)
+# ---------------------------------------------------------------------------
+
+@login_required
+def gerenciar_planos(request):
+    if not request.user.is_superuser:
+        messages.error(request, 'Acesso restrito a administradores.')
+        return redirect('dashboard:index')
+    planos = Plano.objects.all()
+    return render(request, 'accounts/planos.html', {'planos': planos})
+
+
+@login_required
+def criar_plano(request):
+    if not request.user.is_superuser:
+        messages.error(request, 'Acesso restrito a administradores.')
+        return redirect('dashboard:index')
+    if request.method == 'POST':
+        form = PlanoForm(request.POST)
+        if form.is_valid():
+            plano = form.save()
+            messages.success(request, f'Plano "{plano.nome}" criado com sucesso.')
+            return redirect('accounts:planos')
+    else:
+        form = PlanoForm()
+    return render(request, 'accounts/plano_form.html', {'form': form, 'titulo': 'Novo Plano'})
+
+
+@login_required
+def editar_plano(request, pk):
+    if not request.user.is_superuser:
+        messages.error(request, 'Acesso restrito a administradores.')
+        return redirect('dashboard:index')
+    plano = get_object_or_404(Plano, pk=pk)
+    if request.method == 'POST':
+        form = PlanoForm(request.POST, instance=plano)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Plano "{plano.nome}" atualizado.')
+            return redirect('accounts:planos')
+    else:
+        form = PlanoForm(instance=plano)
+    return render(request, 'accounts/plano_form.html', {'form': form, 'titulo': f'Editar — {plano.nome}', 'plano': plano})
+
+
+@login_required
+@require_POST
+def toggle_plano(request, pk):
+    if not request.user.is_superuser:
+        messages.error(request, 'Acesso restrito a administradores.')
+        return redirect('dashboard:index')
+    plano = get_object_or_404(Plano, pk=pk)
+    plano.ativo = not plano.ativo
+    plano.save(update_fields=['ativo'])
+    estado = 'ativado' if plano.ativo else 'desativado'
+    messages.success(request, f'Plano "{plano.nome}" {estado}.')
+    return redirect('accounts:planos')

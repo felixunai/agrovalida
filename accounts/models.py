@@ -4,8 +4,9 @@ from django.conf import settings
 
 class Plano(models.Model):
     nome = models.CharField('nome', max_length=100)
-    preco = models.DecimalField('preço mensal', max_digits=10, decimal_places=2)
-    descricao = models.TextField('descrição', blank=True)
+    preco = models.DecimalField('preço mensal (R$)', max_digits=10, decimal_places=2)
+    preco_anual = models.DecimalField('preço anual (R$)', max_digits=10, decimal_places=2, null=True, blank=True)
+    descricao = models.TextField('descrição / benefícios', blank=True)
     ativo = models.BooleanField('ativo', default=True)
 
     class Meta:

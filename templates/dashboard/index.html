@@ -50,6 +50,70 @@
     </div>
 </div>
 
+<!-- Banner de upgrade para usuários Gratuito -->
+{% if not request.is_pro and not user.is_superuser %}
+<div class="card mb-4 border-primary">
+    <div class="card-body">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-6">
+                <h5 class="mb-1"><i class="bi bi-rocket-takeoff text-primary"></i> Desbloqueie o plano Profissional</h5>
+                <p class="text-muted small mb-2">Você está no plano <strong>Gratuito</strong>. Veja os seus limites atuais:</p>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <div class="text-center p-2 border rounded">
+                            <div class="fw-bold">{{ total_defensivos }}/{{ plan_limits.max_defensivos }}</div>
+                            <div class="text-muted" style="font-size:.75rem">Produtos</div>
+                            <div class="progress mt-1" style="height:4px">
+                                <div class="progress-bar bg-{% if total_defensivos >= plan_limits.max_defensivos %}danger{% else %}primary{% endif %}"
+                                     style="width:{% widthratio total_defensivos plan_limits.max_defensivos 100 %}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-2 border rounded">
+                            <div class="fw-bold">{{ total_lotes }}/{{ plan_limits.max_lotes }}</div>
+                            <div class="text-muted" style="font-size:.75rem">Lotes</div>
+                            <div class="progress mt-1" style="height:4px">
+                                <div class="progress-bar bg-{% if total_lotes >= plan_limits.max_lotes %}danger{% else %}primary{% endif %}"
+                                     style="width:{% widthratio total_lotes plan_limits.max_lotes 100 %}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-2 border rounded">
+                            <div class="fw-bold">{{ notas_pendentes }}/{{ plan_limits.max_notas }}</div>
+                            <div class="text-muted" style="font-size:.75rem">Notas</div>
+                            <div class="progress mt-1" style="height:4px">
+                                <div class="progress-bar bg-{% if notas_pendentes >= plan_limits.max_notas %}danger{% else %}primary{% endif %}"
+                                     style="width:{% widthratio notas_pendentes plan_limits.max_notas 100 %}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 text-center">
+                <div class="fw-bold text-primary fs-4">R$ 399<small class="fs-6 text-muted">/mês</small></div>
+                <div class="text-muted small mb-2">ou R$ 4.000/ano (economize 16%)</div>
+                <ul class="list-unstyled text-start small">
+                    <li><i class="bi bi-check-circle text-success"></i> Produtos e lotes ilimitados</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Relatórios avançados</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Suporte prioritário</li>
+                </ul>
+            </div>
+            <div class="col-lg-3 text-center d-flex flex-column gap-2">
+                <a href="{% url 'accounts:assinar' %}?periodo=mensal" class="btn btn-primary">
+                    <i class="bi bi-credit-card"></i> Assinar por R$ 399/mês
+                </a>
+                <a href="{% url 'accounts:assinar' %}?periodo=anual" class="btn btn-outline-primary">
+                    <i class="bi bi-calendar-check"></i> Plano anual — R$ 4.000
+                </a>
+                <a href="{% url 'accounts:upgrade' %}" class="btn btn-link btn-sm text-muted p-0">Ver detalhes</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Lotes próximos -->
 {% if lotes_proximos %}
 <div class="card mb-4">

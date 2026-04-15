@@ -14,4 +14,8 @@ urlpatterns = [
     path('assinar/', views.assinar, name='assinar'),
     path('assinar/sucesso/', views.checkout_sucesso, name='checkout_sucesso'),
     path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
+    path('planos/', views.gerenciar_planos, name='planos'),
+    path('planos/novo/', views.criar_plano, name='criar_plano'),
+    path('planos/<int:pk>/editar/', views.editar_plano, name='editar_plano'),
+    path('planos/<int:pk>/toggle/', views.toggle_plano, name='toggle_plano'),
 ]
