@@ -79,7 +79,8 @@ def nota_upload(request):
                 notas_criadas.append(nota)
 
             if not notas_criadas:
-                messages.error(request, 'Nenhuma nota pôde ser processada.')
+                msg = '; '.join(erros) if erros else 'Nenhuma nota pôde ser processada.'
+                messages.error(request, msg)
                 return redirect('notas:upload')
 
             if erros:
