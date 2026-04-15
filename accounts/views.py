@@ -80,6 +80,13 @@ def atribuir_plano(request, pk):
         profile.plano_id = None
 
     profile.plano_ativo = ativar
+
+    # Ao desativar manualmente, limpa dados do Stripe para evitar
+    # que webhooks de renovação reativem o plano automaticamente.
+    if not ativar:
+        profile.stripe_subscription_id = ''
+        profile.data_fim_plano = None
+
     profile.save()
     messages.success(request, f'Plano atualizado para {profile.user.username}.')
     return redirect('accounts:usuarios')

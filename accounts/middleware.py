@@ -22,17 +22,26 @@ PLANO_PRO_LIMITS = {
 
 
 def _has_active_subscription(profile):
-    """True if the user has a paid plan that is currently valid."""
+    """True if the user has a paid plan that is currently valid.
+
+    plano_ativo é o interruptor mestre: se False, o plano está desativado
+    independente de qualquer dado do Stripe.
+    """
+    if not profile.plano_ativo:
+        return False
+
     from django.utils import timezone
     hoje = timezone.now().date()
-    # Manual activation by admin
-    if profile.plano_ativo and profile.plano and profile.plano.nome == 'Profissional':
-        # If there's a data_fim_plano, respect it; otherwise trust plano_ativo
+
+    # Plano manual atribuído pelo admin
+    if profile.plano and profile.plano.nome == 'Profissional':
         if profile.data_fim_plano is None or profile.data_fim_plano >= hoje:
             return True
-    # Stripe-activated subscription
+
+    # Assinatura Stripe ativa com data de validade futura
     if profile.stripe_subscription_id and profile.data_fim_plano and profile.data_fim_plano >= hoje:
         return True
+
     return False
 
 
