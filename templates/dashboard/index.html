@@ -81,11 +81,11 @@
                     </div>
                     <div class="col-4">
                         <div class="text-center p-2 border rounded">
-                            <div class="fw-bold">{{ notas_pendentes }}/{{ plan_limits.max_notas }}</div>
+                            <div class="fw-bold">{{ total_notas }}/{{ plan_limits.max_notas }}</div>
                             <div class="text-muted" style="font-size:.75rem">Notas</div>
                             <div class="progress mt-1" style="height:4px">
-                                <div class="progress-bar bg-{% if notas_pendentes >= plan_limits.max_notas %}danger{% else %}primary{% endif %}"
-                                     style="width:{% widthratio notas_pendentes plan_limits.max_notas 100 %}%"></div>
+                                <div class="progress-bar bg-{% if total_notas >= plan_limits.max_notas %}danger{% else %}primary{% endif %}"
+                                     style="width:{% widthratio total_notas plan_limits.max_notas 100 %}%"></div>
                             </div>
                         </div>
                     </div>

@@ -29,6 +29,7 @@ def dashboard(request):
     total_vencidos = lotes_vencidos.count()
     total_vencendo = lotes_vencendo.count()
     total_vigentes = lotes_vigentes.count()
+    total_notas = NotaFiscal.objects.filter(cadastrado_por=request.user).count()
     notas_pendentes = NotaFiscal.objects.filter(cadastrado_por=request.user, processado=False).count()
 
     lotes_proximos = (lotes_vencendo | lotes_vencidos).order_by('data_validade')[:20]
@@ -49,6 +50,7 @@ def dashboard(request):
         'total_vencidos': total_vencidos,
         'total_vencendo': total_vencendo,
         'total_vigentes': total_vigentes,
+        'total_notas': total_notas,
         'notas_pendentes': notas_pendentes,
         'lotes_proximos': lotes_proximos,
         'por_classe': por_classe,

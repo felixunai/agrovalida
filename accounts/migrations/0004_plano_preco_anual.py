@@ -16,4 +16,12 @@ class Migration(migrations.Migration):
                 null=True, verbose_name='preço anual (R$)',
             ),
         ),
+        migrations.AlterField(
+            model_name='plano',
+            name='preco',
+            field=models.DecimalField(
+                decimal_places=2, max_digits=10,
+                verbose_name='preço mensal (R$)',
+            ),
+        ),
     ]

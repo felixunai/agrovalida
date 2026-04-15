@@ -236,11 +236,12 @@ def _ativar_plano_por_usuario(user, session):
 
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    metadata = session.get('metadata') or {}
-    periodo = metadata.get('periodo', 'mensal')
+    # Stripe SDK v7 usa attribute access, não .get()
+    metadata = getattr(session, 'metadata', None) or {}
+    periodo = getattr(metadata, 'periodo', None) or metadata.get('periodo', 'mensal') if hasattr(metadata, 'get') else getattr(metadata, 'periodo', 'mensal')
 
     # Tenta pegar subscription expandida primeiro
-    subscription = session.get('subscription')
+    subscription = getattr(session, 'subscription', None)
     if subscription and hasattr(subscription, 'id'):
         subscription_id = subscription.id
         try:
@@ -250,7 +251,7 @@ def _ativar_plano_por_usuario(user, session):
             data_fim = timezone.now().date() + delta
     else:
         # subscription pode ser só o ID (string) ou None
-        subscription_id = subscription or ''
+        subscription_id = subscription if isinstance(subscription, str) else ''
         delta = relativedelta(years=1) if periodo == 'anual' else relativedelta(months=1)
         data_fim = timezone.now().date() + delta
 
@@ -258,7 +259,7 @@ def _ativar_plano_por_usuario(user, session):
 
     profile.plano = plano_pro
     profile.plano_ativo = True
-    profile.stripe_customer_id = session.get('customer') or profile.stripe_customer_id
+    profile.stripe_customer_id = getattr(session, 'customer', None) or profile.stripe_customer_id
     profile.stripe_subscription_id = subscription_id
     profile.periodo_plano = periodo
     profile.data_fim_plano = data_fim
@@ -282,14 +283,15 @@ def stripe_webhook(request):
         logger.warning('Stripe webhook inválido: %s', e)
         return HttpResponse(status=400)
 
-    event_type = event['type']
-    data = event['data']['object']
+    # Stripe SDK v7: event é StripeObject, usar attribute access
+    event_type = event.type
+    data = event.data.object
 
     if event_type == 'checkout.session.completed':
         _ativar_plano_stripe(data)
 
     elif event_type in ('invoice.paid', 'invoice.payment_succeeded'):
-        sub_id = data.get('subscription')
+        sub_id = getattr(data, 'subscription', None)
         if sub_id:
             _renovar_plano_stripe(sub_id, data)
 
@@ -297,7 +299,7 @@ def stripe_webhook(request):
         _desativar_plano_stripe(data)
 
     elif event_type == 'invoice.payment_failed':
-        customer_id = data.get('customer')
+        customer_id = getattr(data, 'customer', None)
         try:
             profile = UserProfile.objects.get(stripe_customer_id=customer_id)
             logger.warning('Pagamento falhou para %s', profile.user.email)
@@ -309,16 +311,18 @@ def stripe_webhook(request):
 
 def _ativar_plano_stripe(session):
     from django.utils import timezone
-    customer_id = session.get('customer')
-    subscription_id = session.get('subscription')
-    metadata = session.get('metadata', {})
-    periodo = metadata.get('periodo', 'mensal')
+    # Stripe SDK v7: usar getattr em vez de .get()
+    customer_id = getattr(session, 'customer', None)
+    subscription_id = getattr(session, 'subscription', None)
+    metadata = getattr(session, 'metadata', None) or {}
+    periodo = getattr(metadata, 'periodo', None) or 'mensal'
 
     try:
         profile = UserProfile.objects.select_related('user').get(stripe_customer_id=customer_id)
     except UserProfile.DoesNotExist:
-        user_id = metadata.get('user_id')
+        user_id = getattr(metadata, 'user_id', None)
         if not user_id:
+            logger.warning('_ativar_plano_stripe: customer_id %s não encontrado e sem user_id no metadata', customer_id)
             return
         try:
             profile = UserProfile.objects.get(user_id=user_id)
@@ -355,7 +359,7 @@ def _renovar_plano_stripe(subscription_id, invoice):
     try:
         sub = stripe.Subscription.retrieve(subscription_id)
         import datetime
-        data_fim = datetime.date.fromtimestamp(sub['current_period_end'])
+        data_fim = datetime.date.fromtimestamp(sub.current_period_end)
     except Exception:
         hoje = timezone.now().date()
         delta = relativedelta(years=1) if profile.periodo_plano == 'anual' else relativedelta(months=1)
@@ -368,7 +372,7 @@ def _renovar_plano_stripe(subscription_id, invoice):
 
 
 def _desativar_plano_stripe(subscription):
-    sub_id = subscription.get('id')
+    sub_id = getattr(subscription, 'id', None)
     try:
         profile = UserProfile.objects.get(stripe_subscription_id=sub_id)
         profile.plano_ativo = False
