@@ -16,7 +16,8 @@
 <div class="card mb-3">
     <div class="card-body py-2">
         <form method="get">
-            <div class="row g-2 align-items-end">
+            <!-- Linha 1: busca por texto e selects -->
+            <div class="row g-2 align-items-end mb-2">
                 <div class="col-sm-6 col-md-3">
                     <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
                         <i class="bi bi-box-seam"></i> {{ filter.form.defensivo__nome_comercial.label }}
@@ -41,21 +42,30 @@
                     </label>
                     {{ filter.form.fazenda }}
                 </div>
-                <div class="col-sm-6 col-md-1">
+                <div class="col-sm-6 col-md-2">
                     <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
-                        <i class="bi bi-calendar"></i> {{ filter.form.data_validade_inicio.label }}
+                        <i class="bi bi-truck"></i> {{ filter.form.fornecedor.label }}
+                    </label>
+                    {{ filter.form.fornecedor }}
+                </div>
+            </div>
+            <!-- Linha 2: datas e botões -->
+            <div class="row g-2 align-items-end">
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-calendar-range"></i> {{ filter.form.data_validade_inicio.label }}
                     </label>
                     {{ filter.form.data_validade_inicio }}
                 </div>
-                <div class="col-sm-6 col-md-1">
+                <div class="col-sm-6 col-md-3">
                     <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
                         <i class="bi bi-calendar-check"></i> {{ filter.form.data_validade_fim.label }}
                     </label>
                     {{ filter.form.data_validade_fim }}
                 </div>
-                <div class="col-sm-12 col-md-1 d-flex gap-1">
-                    <button type="submit" class="btn btn-primary btn-sm flex-fill" title="Filtrar">
-                        <i class="bi bi-search"></i>
+                <div class="col-sm-12 col-md-2 d-flex gap-1 align-items-end">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                        <i class="bi bi-search"></i> Filtrar
                     </button>
                     <a href="{% url 'lotes:list' %}" class="btn btn-outline-secondary btn-sm" title="Limpar filtros">
                         <i class="bi bi-x-lg"></i>
