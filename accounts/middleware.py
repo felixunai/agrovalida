@@ -5,7 +5,7 @@ from .models import UserProfile
 
 PLANO_GRATUITO_LIMITS = {
     'max_defensivos': 5,
-    'max_lotes': 10,
+    'max_lotes': 5,
     'max_notas': 3,
     'relatorios': False,
     'importacao_nfe': True,

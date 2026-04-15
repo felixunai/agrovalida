@@ -49,11 +49,25 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    {% if request.is_pro or user.is_superuser %}
                     <a class="nav-link {% if request.resolver_match.url_name == 'relatorio_vencimento' %}active{% endif %}"
                        href="{% url 'dashboard:relatorio_vencimento' %}">
                         <i class="bi bi-file-earmark-bar-graph"></i> Relatórios
                     </a>
+                    {% else %}
+                    <a class="nav-link text-muted" href="{% url 'accounts:upgrade' %}" title="Disponível no plano Profissional">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Relatórios <i class="bi bi-lock-fill" style="font-size:.7rem;opacity:.6;"></i>
+                    </a>
+                    {% endif %}
                 </li>
+                {% if request.is_pro or user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'graficos' %}active{% endif %}"
+                       href="{% url 'dashboard:graficos' %}">
+                        <i class="bi bi-bar-chart-line"></i> Gráficos
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.namespace == 'fazendas' %}active{% endif %}"
                        href="{% url 'fazendas:list' %}">

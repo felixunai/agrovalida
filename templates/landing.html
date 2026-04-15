@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AgroValida - Controle de Vencimento de Defensivos e Sementes</title>
+    <title>AgroValida - Controle de Vencimento de Insumos Agropecuários</title>
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
-    <meta name="description" content="Nunca perca um lote por vencimento. Gerencie notas fiscais, produtos e lotes em um só lugar, com alertas automáticos.">
+    <meta name="description" content="Nunca perca um lote por vencimento. Gerencie defensivos, produtos veterinários, sementes e outros insumos com alertas automáticos de validade.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/agrovalida.css' %}">
@@ -62,7 +62,7 @@
                     Nunca perca um lote por <span class="accent">vencimento</span>
                 </h1>
                 <p class="hero-subtitle">
-                    Importe notas fiscais (XML ou PDF), acompanhe validades de defensivos e sementes, e receba alertas automáticos antes que seus produtos vençam.
+                    Controle validades de defensivos agrícolas, produtos veterinários, sementes e demais insumos. Importe notas fiscais em XML e receba alertas automáticos antes que seus produtos vençam.
                 </p>
                 <div class="hero-cta">
                     <a href="{% url 'accounts:register' %}" class="btn-hero-primary">
@@ -78,12 +78,12 @@
                         <div class="hero-stat-label">NF-e automática</div>
                     </div>
                     <div class="hero-stat-item">
-                        <div class="hero-stat-value">PDF</div>
-                        <div class="hero-stat-label">Extração inteligente</div>
-                    </div>
-                    <div class="hero-stat-item">
                         <div class="hero-stat-value">90d</div>
                         <div class="hero-stat-label">Alerta antecipado</div>
+                    </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value"><i class="bi bi-bar-chart-fill" style="font-size:1.1rem"></i></div>
+                        <div class="hero-stat-label">Gráficos analíticos</div>
                     </div>
                 </div>
             </div>
@@ -107,20 +107,20 @@
                         </div>
                     </div>
                     <div class="mockup-row">
-                        <span>Glifosato 480 SL — L2024001</span>
+                        <span>Glifosato 480 SL — Fazenda Norte</span>
                         <span class="mockup-badge mockup-badge-warn">38 dias</span>
                     </div>
                     <div class="mockup-row">
-                        <span>Azoxistrobina 250 SC — A23019</span>
+                        <span>Ivermectina 1% — Depósito Central</span>
                         <span class="mockup-badge mockup-badge-ok">Vigente</span>
                     </div>
                     <div class="mockup-row">
-                        <span>Tebuconazol 200 EC — T220X</span>
+                        <span>Azoxistrobina 250 SC — Fazenda Sul</span>
+                        <span class="mockup-badge mockup-badge-ok">Vigente</span>
+                    </div>
+                    <div class="mockup-row">
+                        <span>Tebuconazol 200 EC — Almoxarifado</span>
                         <span class="mockup-badge mockup-badge-bad">Vencido</span>
-                    </div>
-                    <div class="mockup-row">
-                        <span>Imidacloprido 700 WG — I23B</span>
-                        <span class="mockup-badge mockup-badge-ok">Vigente</span>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
     <div class="container">
         <div class="text-center">
             <div class="section-label">Funcionalidades</div>
-            <h2 class="section-title">Tudo que você precisa para controlar seus lotes</h2>
+            <h2 class="section-title">Tudo que você precisa para controlar seus insumos</h2>
             <p class="section-subtitle">Do upload da nota fiscal até o alerta de vencimento, o AgroValida cuida de todo o processo.</p>
         </div>
         <div class="row g-4">
@@ -141,7 +141,7 @@
                 <div class="feature-card">
                     <div class="feature-icon fi-green"><i class="bi bi-file-earmark-text-fill"></i></div>
                     <h5>Importação de NF-e</h5>
-                    <p>Faça upload de XML ou PDF de notas fiscais. Os dados de produtos, lotes e validades são extraídos automaticamente.</p>
+                    <p>Faça upload do XML da nota fiscal. Produtos, lotes, validades e fornecedor são extraídos automaticamente.</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
@@ -155,28 +155,28 @@
                 <div class="feature-card">
                     <div class="feature-icon fi-blue"><i class="bi bi-boxes"></i></div>
                     <h5>Controle de Lotes</h5>
-                    <p>Número do lote, data de fabricação, validade, quantidade, fornecedor e local de armazenamento em um só lugar.</p>
+                    <p>Número do lote, data de fabricação, validade, quantidade, fazenda e local de armazenamento em um só lugar.</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
                 <div class="feature-card">
                     <div class="feature-icon fi-teal"><i class="bi bi-box-seam-fill"></i></div>
-                    <h5>Cadastro de Produtos</h5>
-                    <p>Gerencie defensivos agrícolas e sementes com classe, registro MAPA, princípio ativo e fabricante.</p>
+                    <h5>Todos os Insumos</h5>
+                    <p>Gerencie defensivos agrícolas, produtos veterinários, sementes e outros insumos com classe, registro e fabricante.</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
                 <div class="feature-card">
                     <div class="feature-icon fi-purple"><i class="bi bi-bar-chart-fill"></i></div>
-                    <h5>Relatórios Avançados</h5>
-                    <p>Filtre relatórios por status, classe de produto, fornecedor e intervalo de datas para tomada de decisão.</p>
+                    <h5>Relatórios e Gráficos</h5>
+                    <p>Relatórios filtráveis por fazenda, local, status e classe. Gráficos analíticos para tomada de decisão rápida.</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
                 <div class="feature-card">
-                    <div class="feature-icon fi-green"><i class="bi bi-speedometer2"></i></div>
-                    <h5>Painel Consolidado</h5>
-                    <p>Dashboard com resumo por status e por classe de produto. Visão instantânea do que precisa de atenção.</p>
+                    <div class="feature-icon fi-green"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h5>Fazendas e Locais</h5>
+                    <p>Organize seus lotes por fazenda e local de armazenamento. Saiba exatamente onde cada produto está guardado.</p>
                 </div>
             </div>
         </div>
@@ -199,7 +199,7 @@
                         <span class="step-connector d-none d-md-block"></span>
                     </div>
                     <h5>Faça upload da NF-e</h5>
-                    <p>Envie o XML ou PDF da nota fiscal. O sistema extrai automaticamente fornecedor, produtos, lotes e datas de validade.</p>
+                    <p>Envie o XML da nota fiscal. O sistema extrai automaticamente fornecedor, produtos, lotes e datas de validade.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -209,14 +209,14 @@
                         <span class="step-connector d-none d-md-block"></span>
                     </div>
                     <h5>Revise e importe</h5>
-                    <p>Confirme os dados extraídos, ajuste a classe do produto se necessário e importe tudo com um clique.</p>
+                    <p>Confirme os dados extraídos, informe a fazenda e o local de armazenamento e importe tudo com um clique.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="step-card">
                     <div class="step-number">3</div>
                     <h5>Monitore os vencimentos</h5>
-                    <p>Acompanhe pelo painel quais lotes estão vencendo, filtre por produto ou status e exporte relatórios.</p>
+                    <p>Acompanhe pelo painel e pelos gráficos quais lotes estão vencendo, filtre por fazenda ou produto e exporte relatórios.</p>
                 </div>
             </div>
         </div>
@@ -229,7 +229,7 @@
         <div class="text-center">
             <div class="section-label">Planos</div>
             <h2 class="section-title">Comece grátis, cresça quando precisar</h2>
-            <p class="section-subtitle">O plano Gratuito já cobre a maioria dos usos. Passe para o Profissional quando seu estoque crescer.</p>
+            <p class="section-subtitle">O plano Gratuito já cobre os primeiros passos. Passe para o Profissional quando seu estoque crescer.</p>
         </div>
         <div class="row justify-content-center g-4">
             {% for plano in planos %}
@@ -249,17 +249,20 @@
                     <div class="pricing-body">
                         {% if plano.preco == 0 %}
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 5 produtos</div>
-                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 10 lotes</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 5 lotes</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Até 3 notas fiscais</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Alertas de vencimento</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Cadastro de fazendas</div>
                         <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Relatórios avançados</div>
+                        <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Gráficos analíticos</div>
                         <div class="pricing-feature disabled"><i class="bi bi-x-circle pf-icon"></i> Importação ilimitada</div>
                         {% else %}
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Produtos ilimitados</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Lotes ilimitados</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Notas fiscais ilimitadas</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Alertas de vencimento</div>
-                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Relatórios avançados</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Relatórios avançados (Excel/CSV)</div>
+                        <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Gráficos analíticos</div>
                         <div class="pricing-feature enabled"><i class="bi bi-check-circle-fill pf-icon"></i> Suporte prioritário</div>
                         {% endif %}
                     </div>
@@ -284,7 +287,7 @@
 <!-- CTA -->
 <section class="section-cta">
     <div class="container">
-        <h2>Comece a monitorar seus lotes hoje</h2>
+        <h2>Comece a monitorar seus insumos hoje</h2>
         <p>Cadastro gratuito, sem cartão de crédito. Importe sua primeira nota em minutos.</p>
         <a href="{% url 'accounts:register' %}" class="btn-hero-primary" style="margin:0 auto;display:inline-flex;">
             <i class="bi bi-rocket-takeoff-fill"></i> Criar conta grátis
@@ -296,7 +299,7 @@
 <footer class="landing-footer">
     <div class="container d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div>
-            <strong>AgroValida</strong> &mdash; Controle de vencimento de defensivos agrícolas e sementes
+            <strong>AgroValida</strong> &mdash; Controle de vencimento de insumos agropecuários
         </div>
         <div class="d-flex gap-3">
             <a href="#funcionalidades">Funcionalidades</a>

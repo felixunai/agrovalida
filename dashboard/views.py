@@ -10,6 +10,7 @@ from lotes.models import Lote
 from defensivos.models import Defensivo, ClasseDefensivo
 from notas.models import NotaFiscal
 from accounts.models import Plano
+from accounts.decorators import plano_requerido
 
 
 @login_required
@@ -21,11 +22,11 @@ def dashboard(request):
     # Apenas lotes ativos no painel
     user_lotes = Lote.objects.filter(cadastrado_por=request.user, ativo=True)
 
-    lotes_vencidos = user_lotes.filter(data_validade__lt=hoje).select_related('defensivo')
+    lotes_vencidos = user_lotes.filter(data_validade__lt=hoje).select_related('defensivo', 'fazenda')
     lotes_vencendo = user_lotes.filter(
         data_validade__gte=hoje, data_validade__lte=limite_alerta
-    ).select_related('defensivo')
-    lotes_vigentes = user_lotes.filter(data_validade__gt=limite_alerta).select_related('defensivo')
+    ).select_related('defensivo', 'fazenda')
+    lotes_vigentes = user_lotes.filter(data_validade__gt=limite_alerta).select_related('defensivo', 'fazenda')
 
     total_defensivos = Defensivo.objects.filter(cadastrado_por=request.user, ativo=True).count()
     total_lotes = user_lotes.count()
@@ -76,11 +77,12 @@ def _filtrar_lotes_relatorio(user, params):
     classe              = params.get('classe', '')
     fornecedor          = params.get('fornecedor', '')
     local_armazenamento = params.get('local_armazenamento', '')
+    fazenda_filtro      = params.get('fazenda', '')
 
     lotes = (
         Lote.objects
         .filter(cadastrado_por=user)
-        .select_related('defensivo')
+        .select_related('defensivo', 'fazenda')
         .order_by('data_validade')
     )
 
@@ -97,13 +99,19 @@ def _filtrar_lotes_relatorio(user, params):
         lotes = lotes.filter(fornecedor__icontains=fornecedor)
     if local_armazenamento:
         lotes = lotes.filter(local_armazenamento__icontains=local_armazenamento)
+    if fazenda_filtro:
+        lotes = lotes.filter(fazenda__nome__icontains=fazenda_filtro)
 
-    return lotes, status, classe, fornecedor, local_armazenamento, dias_alerta
+    return lotes, status, classe, fornecedor, local_armazenamento, fazenda_filtro, dias_alerta
 
 
 @login_required
+@plano_requerido
 def relatorio_vencimento(request):
-    lotes, status, classe, fornecedor, local_armazenamento, dias_alerta = _filtrar_lotes_relatorio(request.user, request.GET)
+    lotes, status, classe, fornecedor, local_armazenamento, fazenda_filtro, dias_alerta = _filtrar_lotes_relatorio(request.user, request.GET)
+
+    from fazendas.models import Fazenda
+    fazendas = Fazenda.objects.filter(cadastrado_por=request.user).order_by('nome')
 
     context = {
         'lotes': lotes,
@@ -112,6 +120,8 @@ def relatorio_vencimento(request):
         'classe': classe,
         'fornecedor': fornecedor,
         'local_armazenamento': local_armazenamento,
+        'fazenda_filtro': fazenda_filtro,
+        'fazendas': fazendas,
         'classes': ClasseDefensivo.choices,
         'dias_alerta': dias_alerta,
     }
@@ -123,7 +133,7 @@ _STATUS_LABELS = {'vencido': 'Vencido', 'vencendo': 'Vencendo em breve', 'vigent
 _RELATORIO_HEADERS = [
     'Nº Lote', 'Produto', 'Classe', 'Fabricação', 'Validade',
     'Dias para Vencer', 'Status', 'Quantidade', 'Unidade',
-    'Fornecedor', 'Nota Fiscal', 'Local Armazenamento',
+    'Fornecedor', 'Nota Fiscal', 'Fazenda', 'Local Armazenamento',
 ]
 
 
@@ -140,11 +150,13 @@ def _lote_row(lote):
         lote.get_unidade_display(),
         lote.fornecedor,
         lote.nota_fiscal,
+        lote.fazenda.nome if lote.fazenda else '',
         lote.local_armazenamento,
     ]
 
 
 @login_required
+@plano_requerido
 def relatorio_vencimento_csv(request):
     lotes, *_ = _filtrar_lotes_relatorio(request.user, request.GET)
 
@@ -160,6 +172,7 @@ def relatorio_vencimento_csv(request):
 
 
 @login_required
+@plano_requerido
 def relatorio_vencimento_excel(request):
     try:
         import openpyxl
@@ -213,3 +226,88 @@ def relatorio_vencimento_excel(request):
     )
     response['Content-Disposition'] = 'attachment; filename="relatorio_vencimento.xlsx"'
     return response
+
+
+@login_required
+@plano_requerido
+def dashboard_graficos(request):
+    import json
+    hoje = timezone.now().date()
+    dias_alerta = getattr(settings, 'ALERTA_DIAS_VENCIMENTO', 90)
+    limite_alerta = hoje + timezone.timedelta(days=dias_alerta)
+
+    user_lotes = Lote.objects.filter(cadastrado_por=request.user, ativo=True)
+
+    # 1. Lotes por status
+    total_vencidos  = user_lotes.filter(data_validade__lt=hoje).count()
+    total_vencendo  = user_lotes.filter(data_validade__gte=hoje, data_validade__lte=limite_alerta).count()
+    total_vigentes  = user_lotes.filter(data_validade__gt=limite_alerta).count()
+
+    # 2. Lotes por classe
+    por_classe_qs = (
+        user_lotes
+        .values('defensivo__classe')
+        .annotate(total=Count('id'))
+        .order_by('-total')
+    )
+    classes_dict = dict(ClasseDefensivo.choices)
+    classe_labels = [classes_dict.get(item['defensivo__classe'], item['defensivo__classe']) for item in por_classe_qs]
+    classe_values = [item['total'] for item in por_classe_qs]
+
+    # 3. Vencimentos por mês (próximos 12 meses)
+    from collections import defaultdict
+    import calendar
+    meses_labels = []
+    meses_vencendo = []
+    meses_vencido = []
+    for i in range(12):
+        ano = (hoje.replace(day=1) + timezone.timedelta(days=32 * i)).year
+        mes = (hoje.replace(day=1) + timezone.timedelta(days=32 * i)).month
+        ultimo_dia = calendar.monthrange(ano, mes)[1]
+        inicio = hoje.__class__(ano, mes, 1)
+        fim    = hoje.__class__(ano, mes, ultimo_dia)
+        count  = user_lotes.filter(data_validade__gte=inicio, data_validade__lte=fim).count()
+        meses_labels.append(f'{mes:02d}/{ano}')
+        if fim < hoje:
+            meses_vencido.append(count)
+            meses_vencendo.append(0)
+        else:
+            meses_vencido.append(0)
+            meses_vencendo.append(count)
+
+    # 4. Lotes por fazenda
+    por_fazenda_qs = (
+        user_lotes
+        .values('fazenda__nome')
+        .annotate(total=Count('id'))
+        .order_by('-total')
+    )
+    fazenda_labels = [item['fazenda__nome'] or 'Sem fazenda' for item in por_fazenda_qs]
+    fazenda_values = [item['total'] for item in por_fazenda_qs]
+
+    # 5. Produtos mais estocados (top 8)
+    por_produto_qs = (
+        user_lotes
+        .values('defensivo__nome_comercial')
+        .annotate(total=Count('id'))
+        .order_by('-total')[:8]
+    )
+    produto_labels = [item['defensivo__nome_comercial'] for item in por_produto_qs]
+    produto_values = [item['total'] for item in por_produto_qs]
+
+    context = {
+        'status_data': json.dumps({
+            'labels': ['Vigentes', 'Vencendo em breve', 'Vencidos'],
+            'values': [total_vigentes, total_vencendo, total_vencidos],
+        }),
+        'classe_data': json.dumps({'labels': classe_labels, 'values': classe_values}),
+        'meses_data': json.dumps({
+            'labels': meses_labels,
+            'vencendo': meses_vencendo,
+            'vencido': meses_vencido,
+        }),
+        'fazenda_data': json.dumps({'labels': fazenda_labels, 'values': fazenda_values}),
+        'produto_data': json.dumps({'labels': produto_labels, 'values': produto_values}),
+        'total_lotes': user_lotes.count(),
+    }
+    return render(request, 'dashboard/graficos.html', context)

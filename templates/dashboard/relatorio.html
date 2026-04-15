@@ -48,16 +48,23 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-2">
                     <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
                         <i class="bi bi-truck"></i> Fornecedor
                     </label>
                     <input type="text" name="fornecedor" class="form-control form-control-sm"
-                           value="{{ fornecedor|default:'' }}" placeholder="Buscar fornecedor…">
+                           value="{{ fornecedor|default:'' }}" placeholder="Buscar…">
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-2">
                     <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
-                        <i class="bi bi-geo-alt"></i> Local de Armazenamento
+                        <i class="bi bi-geo-alt"></i> Fazenda
+                    </label>
+                    <input type="text" name="fazenda" class="form-control form-control-sm"
+                           value="{{ fazenda_filtro|default:'' }}" placeholder="Buscar fazenda…">
+                </div>
+                <div class="col-sm-6 col-md-2">
+                    <label class="form-label form-label-sm mb-1 text-muted fw-semibold">
+                        <i class="bi bi-house"></i> Local
                     </label>
                     <input type="text" name="local_armazenamento" class="form-control form-control-sm"
                            value="{{ local_armazenamento|default:'' }}" placeholder="Buscar local…">
@@ -89,6 +96,7 @@
                     <th>STATUS</th>
                     <th>QUANTIDADE</th>
                     <th>FORNECEDOR</th>
+                    <th>FAZENDA</th>
                     <th>LOCAL</th>
                 </tr>
             </thead>
@@ -116,11 +124,12 @@
                     </td>
                     <td>{{ lote.quantidade }} {{ lote.get_unidade_display }}</td>
                     <td>{{ lote.fornecedor|default:"—" }}</td>
+                    <td>{{ lote.fazenda.nome|default:"—" }}</td>
                     <td>{{ lote.local_armazenamento|default:"—" }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="text-center py-4 text-muted">
+                    <td colspan="11" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
                         Nenhum lote encontrado com os filtros aplicados.
                     </td>

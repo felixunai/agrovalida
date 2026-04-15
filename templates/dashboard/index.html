@@ -133,6 +133,8 @@
                 <tr>
                     <th>Lote</th>
                     <th>Produto</th>
+                    <th>Fazenda</th>
+                    <th>Local</th>
                     <th>Validade</th>
                     <th>Dias</th>
                     <th>Status</th>
@@ -144,6 +146,8 @@
                 <tr>
                     <td><a href="{{ lote.get_absolute_url }}">{{ lote.numero_lote }}</a></td>
                     <td>{{ lote.defensivo.nome_comercial }}</td>
+                    <td class="text-muted small">{{ lote.fazenda.nome|default:"—" }}</td>
+                    <td class="text-muted small">{{ lote.local_armazenamento|default:"—" }}</td>
                     <td>{{ lote.data_validade|date:"d/m/Y" }}</td>
                     <td>
                         <strong {% if lote.dias_para_vencer < 0 %}style="color:var(--av-red)"{% elif lote.dias_para_vencer <= 30 %}style="color:var(--av-amber-d)"{% endif %}>

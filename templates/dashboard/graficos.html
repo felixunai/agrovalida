@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Gráficos - AgroValida{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-bar-chart-line"></i> Dashboard Analítico</h2>
+        <div class="breadcrumb-text">{{ total_lotes }} lote{{ total_lotes|pluralize }} ativo{{ total_lotes|pluralize }} no total</div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Status geral -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-pie-chart-fill text-primary"></i> Situação dos Lotes
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartStatus" style="max-height:260px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Por classe -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-tags-fill text-success"></i> Lotes por Classe de Produto
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartClasse" style="max-height:260px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Por fazenda -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-geo-alt-fill text-warning"></i> Lotes por Fazenda
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartFazenda" style="max-height:260px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vencimentos por mês -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-calendar3 text-danger"></i> Vencimentos por Mês (próximos 12 meses)
+            </div>
+            <div class="card-body">
+                <canvas id="chartMeses" style="max-height:280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top produtos -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-box-seam-fill text-info"></i> Top Produtos (nº de lotes)
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="chartProduto" style="max-height:280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const statusData  = {{ status_data|safe }};
+const classeData  = {{ classe_data|safe }};
+const mesesData   = {{ meses_data|safe }};
+const fazendaData = {{ fazenda_data|safe }};
+const produtoData = {{ produto_data|safe }};
+
+const PALETTE = [
+    '#2d6a4f','#52b788','#e8935a','#d62839','#3a86ff',
+    '#8338ec','#fb5607','#ffbe0b','#06d6a0','#118ab2',
+];
+
+// Status — doughnut
+new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: {
+        labels: statusData.labels,
+        datasets: [{
+            data: statusData.values,
+            backgroundColor: ['#52b788','#e8935a','#d62839'],
+            borderWidth: 2,
+            borderColor: '#fff',
+        }]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '60%',
+    }
+});
+
+// Classe — horizontal bar
+new Chart(document.getElementById('chartClasse'), {
+    type: 'bar',
+    data: {
+        labels: classeData.labels,
+        datasets: [{
+            label: 'Lotes',
+            data: classeData.values,
+            backgroundColor: PALETTE,
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { stepSize: 1 } } },
+    }
+});
+
+// Fazenda — doughnut
+new Chart(document.getElementById('chartFazenda'), {
+    type: 'doughnut',
+    data: {
+        labels: fazendaData.labels,
+        datasets: [{
+            data: fazendaData.values,
+            backgroundColor: PALETTE,
+            borderWidth: 2,
+            borderColor: '#fff',
+        }]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '55%',
+    }
+});
+
+// Meses — stacked bar
+new Chart(document.getElementById('chartMeses'), {
+    type: 'bar',
+    data: {
+        labels: mesesData.labels,
+        datasets: [
+            {
+                label: 'Vencendo',
+                data: mesesData.vencendo,
+                backgroundColor: '#e8935a',
+                borderRadius: 3,
+            },
+            {
+                label: 'Vencidos',
+                data: mesesData.vencido,
+                backgroundColor: '#d62839',
+                borderRadius: 3,
+            },
+        ]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+            x: { stacked: true },
+            y: { stacked: true, ticks: { stepSize: 1 } },
+        },
+    }
+});
+
+// Produtos — horizontal bar
+new Chart(document.getElementById('chartProduto'), {
+    type: 'bar',
+    data: {
+        labels: produtoData.labels,
+        datasets: [{
+            label: 'Lotes',
+            data: produtoData.values,
+            backgroundColor: '#3a86ff',
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { stepSize: 1 } } },
+    }
+});
+</script>
+{% endblock %}
